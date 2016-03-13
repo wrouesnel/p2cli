@@ -2,10 +2,10 @@ language: go
 go:
 - 1.6
 before_script:
-- go vet ./...
+- go vet
 script:
 - go build -o p2 .
-- go test -v ./...
+- go test -v .
 deploy:
   provider: releases
   api_key:
