@@ -1,5 +1,5 @@
 # p2cli
-
+[![Build Status](https://drone.io/github.com/wrouesnel/p2cli/status.png)](https://drone.io/github.com/wrouesnel/p2cli/latest)
 A command line tool for rendering pongo2 (jinja2) templates to stdout.
 
 The rendering library is (pongo2)[https://github.com/flosch/pongo2].
