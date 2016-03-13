@@ -4,7 +4,7 @@ GO_SRC := $(shell find -type f -name "*.go")
 all: vet test p2
 
 p2: $(GO_SRC)
-	go build -ldflags "-X main.Version=git:$(shell git rev-parse HEAD)" -o p2 .
+	CGO_ENABLED=0 GOOS=linux go build -a -ldflags "-extldflags '-static' -X main.Version=git:$(shell git rev-parse HEAD)" -o p2 .
 
 vet:
 	go vet .
