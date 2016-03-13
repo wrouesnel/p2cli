@@ -91,7 +91,7 @@ func main() {
 		DumpInputData bool `goptions:"-d, --debug, description='Print Go serialization to stderr'"`
 
 		Format string `goptions:"-f, --format, description='Input data format [valid values: env,yaml,json]'"`
-		TemplateFile string `goptions:"-t, --template, obligatory, description='Template file to process'"`
+		TemplateFile string `goptions:"-t, --template, description='Template file to process'"`
 		DataFile string `goptions:"-i, --input, description='Input data path. Leave blank for stdin.'"`
 		UseEnvKey bool `goptions:"--use-env-key, description='Treat --input as an environment key name to read.'"`
 	}{
@@ -103,6 +103,10 @@ func main() {
 	if options.PrintVersion {
 		fmt.Println(Version)
 		os.Exit(0)
+	}
+	
+	if options.TemplateFile == "" {
+	    log.Fatalln("Template file must be specified!")
 	}
 
 	// Determine mode of operations
