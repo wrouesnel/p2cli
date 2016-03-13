@@ -93,7 +93,7 @@ func main() {
 		Format string `goptions:"-f, --format, description='Input data format [valid values: env,yaml,json]'"`
 		TemplateFile string `goptions:"-t, --template, obligatory, description='Template file to process'"`
 		DataFile string `goptions:"-i, --input, description='Input data path. Leave blank for stdin.'"`
-		UseEnvKey bool `goptions:"--use-env-key", description='Treat --input as an environment key name to read.'`
+		UseEnvKey bool `goptions:"--use-env-key, description='Treat --input as an environment key name to read.'"`
 	}{
 		Format : "",
 	}
