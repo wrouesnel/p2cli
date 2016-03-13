@@ -1,0 +1,31 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"path": "github.com/Sirupsen/logrus",
+			"revision": "446d1c146faa8ed3f4218f056fcd165f6bcfda81",
+			"revisionTime": "2015-12-04T09:14:43-05:00"
+		},
+		{
+			"path": "github.com/flosch/pongo2",
+			"revision": "a269242022ae534b052672d6a9326a40560a63e7",
+			"revisionTime": "2015-11-18T01:06:30+01:00"
+		},
+		{
+			"path": "github.com/voxelbrain/goptions",
+			"revision": "26cb8b04692384f4dc269de3b5fcf3e2ef78573e",
+			"revisionTime": "2015-11-02T23:10:03Z"
+		},
+		{
+			"path": "github.com/wrouesnel/go.log",
+			"revision": "b8eb24d32dccf667c25b925dc0be4bc72ce355e8",
+			"revisionTime": "2016-02-17T13:35:12+11:00"
+		},
+		{
+			"path": "gopkg.in/yaml.v2",
+			"revision": "f7716cbe52baa25d2e9b0d0da546fcf909fc16b4",
+			"revisionTime": "2015-12-01T14:27:45-02:00"
+		}
+	]
+}

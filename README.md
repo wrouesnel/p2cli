@@ -1,8 +1,8 @@
 # p2cli
-[![Build Status](https://drone.io/github.com/wrouesnel/p2cli/status.png)](https://drone.io/github.com/wrouesnel/p2cli/latest)
+[![Build Status](https://travis-ci.org/wrouesnel/p2cli.svg?branch=master)](https://travis-ci.org/wrouesnel/p2cli)
 A command line tool for rendering pongo2 (jinja2) templates to stdout.
 
-The rendering library is (pongo2)[https://github.com/flosch/pongo2].
+The rendering library is [pongo2](https://github.com/flosch/pongo2).
 
 It is inspired (and pretty much a copy of) the j2cli utility for Python, but
 leveraging Golang's static compilation for easier use in Docker and other
@@ -53,3 +53,6 @@ Go to build a cgo-independent, statically linked binary.
 
 Note: users on platforms other then Linux will need to specify GOOS when
 building.
+
+### Vendoring
+Vendoring is managed by govendor
