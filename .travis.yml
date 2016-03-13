@@ -1,15 +1,10 @@
 language: go
 go:
 - 1.6
-before_script:
-- go vet
-script:
-- go build -o p2 .
-- go test -v .
 deploy:
   provider: releases
   api_key:
     secure: cXyCEOcFY7pVdLDtN6BTCgeghOtsy+qTZgHiGZIM50g5/ydOzxyUxvTX3UcQ94yFelJlCj6pBPwdlPgv4EKYgXxsnZtervEm9xR5AlDW4GzijkMLYalHdsrQyoPN+WQL0bEyELIwPrHgqL5IaEwzB1SC45HxgT1Pv7UixkIxv0WIw/+9oGY6JTtqj2zurjiOklw6f32kzXGAD+sa9QgzKuMnFnMGuddQgor09kVlvRUtzoR51GUUztwfcKmDciNs8Zer0X0t83UZ0wXkGwTv74vYnt0/+r73FeWJlAC6u7bmlVj6Xspj2Zhs1H7zjVIs4UEKfiDE1R6GWg63Gub+jNTON/kUEmHx+dcfPlmPQjkiFTQqXGVlBEkKmCOjPmQBsbA9VgsDGvhDVqne/d2QHyg2lwx1YJQVopngUbShHlMm4f9QU2axlHQrRb75/+dGduINvtNzOtNKdk3/CaVxadUW5dgcEojyLmmYqtISTP6dFIH7IdLOUpgws8LILpQkRk6ktcW5jivPDoZxWCjPEnE5+dUkl3lVDxfXFzEtwQb85jHUX7VcpLH0b0U8QCBnsawHKF3+YRiXswM+uWK7kE/QdPREl8CzNnKKPVUC+rlBe+9mQr3DjhmOsnlYvgKwA3R/NGkkLJARp3T+nGWobyOVxAm1yiwZJSa7h1A8WMM=
-  file: p2
+  file: /home/travis/p2
   on:
     repo: wrouesnel/p2cli
