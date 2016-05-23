@@ -11,7 +11,7 @@ package main
 import (
 	"github.com/voxelbrain/goptions"
 	"github.com/wrouesnel/go.log"
-	"github.com/flosch/pongo2"
+	"gopkg.in/flosch/pongo2.v3"
 	"fmt"
 	"os"
 	"gopkg.in/yaml.v2"
