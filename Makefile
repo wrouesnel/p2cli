@@ -1,3 +1,6 @@
+
+GOFILES_NOVENDOR = $(shell find . -type f -name '*.go' -not -path "./vendor/*")
+
 all: vet test p2
 
 p2: $(GO_SRC)
@@ -11,5 +14,6 @@ vet:
 test: p2
 	go test -v .
 	./run_tests.sh
+	gofmt -l ${GOFILES_NOVENDOR} | read 2>/dev/null && echo "Code differs from gofmt's style" 1>&2 && exit 1 || true
 
 .PHONY: test vet
