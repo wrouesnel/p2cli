@@ -4,50 +4,52 @@ of files using Jinja2-like syntax (from the Pongo2 engine).
 
 Extremely useful for building Docker files when you don't want to pull in all of
 python.
- */
+*/
 
 package main
 
 import (
+	"bufio"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"github.com/flosch/pongo2"
 	"github.com/kballard/go-shellquote"
 	"github.com/voxelbrain/goptions"
 	"github.com/wrouesnel/go.log"
-	"gopkg.in/flosch/pongo2.v3"
-	"fmt"
-	"os"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
-	"encoding/json"
-	"strings"
-	"bytes"
-	"bufio"
-	"path"
 	"io"
+	"io/ioutil"
+	"os"
+	"path"
+	"strings"
 )
 
 var Version string = "development"
 
 type SupportedType int
+
 const (
 	UNKNOWN SupportedType = iota
-	JSON SupportedType = iota
-	YAML SupportedType = iota
-	ENV SupportedType = iota
+	JSON    SupportedType = iota
+	YAML    SupportedType = iota
+	ENV     SupportedType = iota
 )
 
 type DataSource int
+
 const (
-	SOURCE_ENV		DataSource = iota	// Input comes from environment
-	SOURCE_ENVKEY	DataSource = iota	// Input comes from environment key
-	SOURCE_STDIN	DataSource = iota	// Input comes from stdin
-	SOURCE_FILE		DataSource = iota	// Input comes from a file
+	SOURCE_ENV    DataSource = iota // Input comes from environment
+	SOURCE_ENVKEY DataSource = iota // Input comes from environment key
+	SOURCE_STDIN  DataSource = iota // Input comes from stdin
+	SOURCE_FILE   DataSource = iota // Input comes from a file
 )
 
 var dataFormats map[string]SupportedType = map[string]SupportedType{
-	"json" : JSON,
-	"yaml" : YAML,
-	"yml" : YAML,
-	"env" : ENV,
+	"json": JSON,
+	"yaml": YAML,
+	"yml":  YAML,
+	"env":  ENV,
 }
 
 var (
@@ -56,10 +58,12 @@ var (
 
 // Error raised when an environment variable is improperly formatted
 type ErrorEnvironmentVariables struct {
+	Reason    string
 	RawEnvVar string
 }
+
 func (this ErrorEnvironmentVariables) Error() string {
-	return fmt.Sprintf("Unparseable environment variable string: %s", this.RawEnvVar)
+	return fmt.Sprintf("%s: %s", this.Reason, this.RawEnvVar)
 }
 
 func readRawInput(name string, source DataSource) []byte {
@@ -88,17 +92,17 @@ func readRawInput(name string, source DataSource) []byte {
 
 func main() {
 	options := struct {
-		Help     goptions.Help `goptions:"-h, --help, description='Show this help'"`
-		PrintVersion bool `goptions:"-v, --version, description='Print version'"`
-		DumpInputData bool `goptions:"-d, --debug, description='Print Go serialization to stderr'"`
+		Help          goptions.Help `goptions:"-h, --help, description='Show this help'"`
+		PrintVersion  bool          `goptions:"-v, --version, description='Print version'"`
+		DumpInputData bool          `goptions:"-d, --debug, description='Print Go serialization to stderr'"`
 
-		Format string `goptions:"-f, --format, description='Input data format [valid values: env,yaml,json]'"`
-		UseEnvKey bool `goptions:"--use-env-key, description='Treat --input as an environment key name to read.'"`
+		Format       string `goptions:"-f, --format, description='Input data format [valid values: env,yaml,json]'"`
+		UseEnvKey    bool   `goptions:"--use-env-key, description='Treat --input as an environment key name to read.'"`
 		TemplateFile string `goptions:"-t, --template, description='Template file to process'"`
-		DataFile string `goptions:"-i, --input, description='Input data path. Leave blank for stdin.'"`
-		OutputFile string `goptions:"--output, description='Output file. Leave blank for stdout.'"`
+		DataFile     string `goptions:"-i, --input, description='Input data path. Leave blank for stdin.'"`
+		OutputFile   string `goptions:"-o, --output, description='Output file. Leave blank for stdout.'"`
 	}{
-		Format : "",
+		Format: "",
 	}
 
 	goptions.ParseAndFail(&options)
@@ -107,9 +111,9 @@ func main() {
 		fmt.Println(Version)
 		os.Exit(0)
 	}
-	
+
 	if options.TemplateFile == "" {
-	    log.Fatalln("Template file must be specified!")
+		log.Fatalln("Template file must be specified!")
 	}
 
 	// Determine mode of operations
@@ -151,35 +155,60 @@ func main() {
 	tmpl, err := pongo2.FromFile(options.TemplateFile)
 	if err != nil {
 		log.With("template", options.TemplateFile).
-		Fatalln("Could not template file:", err)
+			Fatalln("Could not template file:", err)
 	}
 
 	// Get the input context
 	switch fileFormat {
 	case ENV:
-		var environment []string
+		err = func(inputData map[string]interface{}) error {
+			if inputSource != SOURCE_ENV {
+				lineScanner := bufio.NewScanner(bytes.NewReader(readRawInput(options.DataFile, inputSource)))
+				for lineScanner.Scan() {
+					keyval := lineScanner.Text()
+					splitKeyVal := strings.SplitN(lineScanner.Text(), "=", 2)
+					if len(splitKeyVal) != 2 {
+						return error(ErrorEnvironmentVariables{
+							Reason:    "Could not find an equals value to split on",
+							RawEnvVar: keyval,
+						})
+					}
+					// File values should support sh-escaped strings, whereas the
+					// raw environment will accept *anything* after the = sign.
+					values, err := shellquote.Split(splitKeyVal[1])
+					if err != nil {
+						return error(ErrorEnvironmentVariables{
+							Reason:    err.Error(),
+							RawEnvVar: keyval,
+						})
+					}
 
-		if inputSource != SOURCE_ENV {
-			lineScanner := bufio.NewScanner(bytes.NewReader(readRawInput(options.DataFile, inputSource)))
-			for lineScanner.Scan() {
-				environment = append(environment, lineScanner.Text())
-			}
-		} else {
-			// Use literal environment
-			environment = os.Environ()
-		}
+					// Detect if more then 1 values was parsed - this is invalid in
+					// sourced files, and we don't want to try parsing shell arrays.
+					if len(values) > 1 {
+						return error(ErrorEnvironmentVariables{
+							Reason:    "Improperly escaped environment variable. p2 does not parse arrays.",
+							RawEnvVar: keyval,
+						})
+					}
 
-		// This is our bit of custom env var processing code
-		err = func(environment []string, inputData map[string]interface{}) error {
-			for _, keyval := range environment {
-				splitKeyVal := strings.SplitN(keyval, "=", 2)
-				if len(splitKeyVal) != 2 {
-					return error(ErrorEnvironmentVariables{keyval})
+					inputData[splitKeyVal[0]] = values[0]
 				}
-				inputData[splitKeyVal[0]] = splitKeyVal[1]
+			} else {
+				for _, keyval := range os.Environ() {
+					splitKeyVal := strings.SplitN(keyval, "=", 2)
+					if len(splitKeyVal) != 2 {
+						return error(ErrorEnvironmentVariables{
+							Reason:    "Could not find an equals value to split on",
+							RawEnvVar: keyval,
+						})
+					}
+
+					inputData[splitKeyVal[0]] = splitKeyVal[1]
+				}
 			}
 			return nil
-		}(environment, inputData)
+		}(inputData)
 	case YAML:
 		err = yaml.Unmarshal(readRawInput(options.DataFile, inputSource), &inputData)
 	case JSON:
