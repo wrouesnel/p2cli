@@ -9,6 +9,16 @@
 			"revisionTime": "2016-04-25T11:32:37+02:00"
 		},
 		{
+			"path": "github.com/flosch/pongo2",
+			"revision": "5c6b9724dc3ef94050696ff1ab594702504a9c43",
+			"revisionTime": "2016-08-13T13:28:59+02:00"
+		},
+		{
+			"path": "github.com/kballard/go-shellquote",
+			"revision": "d8ec1a69a250a17bb0e419c386eac1f3711dc142",
+			"revisionTime": "2015-08-10T00:47:51-07:00"
+		},
+		{
 			"checksumSHA1": "rZQEd9X2I+RjTOtQivtIDoc+bXM=",
 			"path": "github.com/voxelbrain/goptions",
 			"revision": "26cb8b04692384f4dc269de3b5fcf3e2ef78573e",
@@ -25,12 +35,6 @@
 			"path": "golang.org/x/sys/unix",
 			"revision": "b776ec39b3e54652e09028aaaaac9757f4f8211a",
 			"revisionTime": "2016-04-20T22:29:30-04:00"
-		},
-		{
-			"checksumSHA1": "pf/HBhFyBC9SclnEP2p+QRJCD2U=",
-			"path": "gopkg.in/flosch/pongo2.v3",
-			"revision": "5e81b817a0c48c1c57cdf1a9056cf76bdee02ca9",
-			"revisionTime": "2014-10-28T01:08:13+01:00"
 		},
 		{
 			"checksumSHA1": "+OgOXBoiQ+X+C2dsAeiOHwBIEH0=",
