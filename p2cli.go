@@ -9,6 +9,7 @@ python.
 package main
 
 import (
+	"github.com/kballard/go-shellquote"
 	"github.com/voxelbrain/goptions"
 	"github.com/wrouesnel/go.log"
 	"gopkg.in/flosch/pongo2.v3"
@@ -21,6 +22,7 @@ import (
 	"bytes"
 	"bufio"
 	"path"
+	"io"
 )
 
 var Version string = "development"
@@ -91,9 +93,10 @@ func main() {
 		DumpInputData bool `goptions:"-d, --debug, description='Print Go serialization to stderr'"`
 
 		Format string `goptions:"-f, --format, description='Input data format [valid values: env,yaml,json]'"`
+		UseEnvKey bool `goptions:"--use-env-key, description='Treat --input as an environment key name to read.'"`
 		TemplateFile string `goptions:"-t, --template, description='Template file to process'"`
 		DataFile string `goptions:"-i, --input, description='Input data path. Leave blank for stdin.'"`
-		UseEnvKey bool `goptions:"--use-env-key, description='Treat --input as an environment key name to read.'"`
+		OutputFile string `goptions:"--output, description='Output file. Leave blank for stdout.'"`
 	}{
 		Format : "",
 	}
@@ -195,8 +198,20 @@ func main() {
 		fmt.Fprintln(os.Stderr, inputData)
 	}
 
+	var outputWriter io.Writer
+	if options.OutputFile != "" {
+		fileOut, err := os.OpenFile(options.OutputFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.FileMode(0777))
+		if err != nil {
+			log.Fatalln("Error opening output file for writing:", err)
+		}
+		defer fileOut.Close()
+		outputWriter = io.Writer(fileOut)
+	} else {
+		outputWriter = os.Stdout
+	}
+
 	// Everything loaded, so try rendering the template.
-	err = tmpl.ExecuteWriter(pongo2.Context(inputData), os.Stdout)
+	err = tmpl.ExecuteWriter(pongo2.Context(inputData), outputWriter)
 	if err != nil {
 		log.With("template", options.TemplateFile).
 			With("data", options.DataFile).
