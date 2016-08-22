@@ -52,6 +52,21 @@ var dataFormats map[string]SupportedType = map[string]SupportedType{
 	"env":  ENV,
 }
 
+// Map of custom filters p2 implements. These are gated behind the --enable-filter
+// command line option as they can have unexpected or even unsafe behavior (i.e.
+// templates gain the ability to make filesystem modifications).
+// Disabled filters are stubbed out to allow for debugging.
+
+type CustomFilterSpec struct {
+	FilterFunc pongo2.FilterFunction
+	NoopFunc   pongo2.FilterFunction
+}
+
+var customFilters map[string]CustomFilterSpec = map[string]CustomFilterSpec{
+	"write_file": CustomFilterSpec{filterWriteFile, filterNoopPassthru},
+	"make_dirs":  CustomFilterSpec{filterMakeDirs, filterNoopPassthru},
+}
+
 var (
 	inputData map[string]interface{} = make(map[string]interface{})
 )
@@ -101,6 +116,9 @@ func main() {
 		TemplateFile string `goptions:"-t, --template, description='Template file to process'"`
 		DataFile     string `goptions:"-i, --input, description='Input data path. Leave blank for stdin.'"`
 		OutputFile   string `goptions:"-o, --output, description='Output file. Leave blank for stdout.'"`
+
+		CustomFilters     string `goptions:"--enable-filters, description='Enable custom p2 filters.'"`
+		CustomFilterNoops bool   `goptions:"--enable-noop-filters, description='Enable all custom filters in noop mode. Supercedes --enable-filters'"`
 	}{
 		Format: "",
 	}
@@ -114,6 +132,25 @@ func main() {
 
 	if options.TemplateFile == "" {
 		log.Fatalln("Template file must be specified!")
+	}
+
+	// Register custom filter functions.
+	if options.CustomFilterNoops {
+		for filter, spec := range customFilters {
+			pongo2.RegisterFilter(filter, spec.NoopFunc)
+		}
+	} else {
+		// Register enabled custom-filters
+		if options.CustomFilters != "" {
+			for _, filter := range strings.Split(options.CustomFilters, ",") {
+				spec, found := customFilters[filter]
+				if !found {
+					log.Fatalln("This version of p2 does not support the", filter, "custom filter.")
+				}
+
+				pongo2.RegisterFilter(filter, spec.FilterFunc)
+			}
+		}
 	}
 
 	// Determine mode of operations
