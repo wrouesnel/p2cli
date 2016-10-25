@@ -1,12 +1,13 @@
 language: go
 go:
 - 1.6
-deploy:
-  skip_cleanup: true
-  provider: releases
-  api_key:
-    secure: cXyCEOcFY7pVdLDtN6BTCgeghOtsy+qTZgHiGZIM50g5/ydOzxyUxvTX3UcQ94yFelJlCj6pBPwdlPgv4EKYgXxsnZtervEm9xR5AlDW4GzijkMLYalHdsrQyoPN+WQL0bEyELIwPrHgqL5IaEwzB1SC45HxgT1Pv7UixkIxv0WIw/+9oGY6JTtqj2zurjiOklw6f32kzXGAD+sa9QgzKuMnFnMGuddQgor09kVlvRUtzoR51GUUztwfcKmDciNs8Zer0X0t83UZ0wXkGwTv74vYnt0/+r73FeWJlAC6u7bmlVj6Xspj2Zhs1H7zjVIs4UEKfiDE1R6GWg63Gub+jNTON/kUEmHx+dcfPlmPQjkiFTQqXGVlBEkKmCOjPmQBsbA9VgsDGvhDVqne/d2QHyg2lwx1YJQVopngUbShHlMm4f9QU2axlHQrRb75/+dGduINvtNzOtNKdk3/CaVxadUW5dgcEojyLmmYqtISTP6dFIH7IdLOUpgws8LILpQkRk6ktcW5jivPDoZxWCjPEnE5+dUkl3lVDxfXFzEtwQb85jHUX7VcpLH0b0U8QCBnsawHKF3+YRiXswM+uWK7kE/QdPREl8CzNnKKPVUC+rlBe+9mQr3DjhmOsnlYvgKwA3R/NGkkLJARp3T+nGWobyOVxAm1yiwZJSa7h1A8WMM=
-  file: $GOPATH/src/github.com/wrouesnel/p2cli/p2
-  on:
-    tags: true
-    repo: wrouesnel/p2cli
+sudo: false
+install:
+- git clone https://github.com/CommBank/ci.git
+- chmod ugo+x ci/*
+- ./setup-version.sh
+script:
+- make release
+env:
+  global:
+    secure: bL1vIp85qaaHEjjcVx9nJKFMtOPwBO2fxMs6wO8qrr1RgLfOm4NrKSyeki4FOZKXdA5+rIRFiszev3zrKm1/neeKXrYV0ExXyoMCBjlvHiUiI6xmmslp1YT9nEvoFrKupCB/nG8v+L3IYpSNuSdVyoPkTe7l5ISaMHIrrqSkEO+bEp4eWOwtjAeBGRH61uZ05wp9OG/3eG5Z5QmWBNsmrhL3EOyvyT52+ugJ/9dev9eNYh7WX2fwwcRkwYOhRI2qbysgi7Ou6aYdidb0Bs1YxqqWdI+necw20Xqau36iStH8HR+0t8iQxr9BX8QfCLZCH+NmTZp29njkPyC2quJ40yYaPht6KtVA5bQb5STIlQyhGvjUZKA1MbnKm6MTNW8YsX8ZAh7V/2ie+0LfewDRyaf5+SQmdPTEsIjrqHsE+r96B7KanH979spq70Z36XG+aMwUaDV+cH7YfdX1Cg58A3kfR4JDFmN6B1fFfiTMeVBcGe8t76VLNy7uVhV0PAsZfU+ItymeGHVf0RgKVJFCYk0IoyA1WTRUI7Hzk7aOo3Qd2KgfiQz3THlQ2TAi/Aj92pKU2xvArzy2X5upI0+Y+3NYxKiz+Tz3OkH3f48OUa7xiKgMqivnTPm2qNT2NWKRlIlyTRVr2K0Mx07rcWxxvYNEGJJKtAVlYE7cskakp64=

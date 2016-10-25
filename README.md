@@ -1,5 +1,5 @@
 # p2cli
-[![Build Status](https://travis-ci.org/wrouesnel/p2cli.svg?branch=master)](https://travis-ci.org/wrouesnel/p2cli)
+[![Build Status](https://travis-ci.org/CommBank/p2cli.svg?branch=master)](https://travis-ci.org/CommBank/p2cli)
 
 A command line tool for rendering pongo2 (jinja2) templates to stdout.
 
