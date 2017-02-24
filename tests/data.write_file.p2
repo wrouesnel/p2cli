@@ -1,0 +1,2 @@
+{{ write_file_data | write_file:"tests/data.write_file.test"}}
+

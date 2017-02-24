@@ -1,5 +1,6 @@
 
-GOFILES_NOVENDOR = $(shell find . -type f -name '*.go' -not -path "./vendor/*")
+GO_SRC := $(shell find -type f -name '*.go' ! -path '*/vendor/*')
+VERSION ?= $(shell git describe --long --dirty)
 
 all: vet test p2
 
@@ -9,11 +10,17 @@ p2: $(GO_SRC)
 	-o p2 .
 
 vet:
-	go vet .
+	go vet
 
-test: p2
-	go test -v .
-	./run_tests.sh
-	gofmt -l ${GOFILES_NOVENDOR} | read 2>/dev/null && echo "Code differs from gofmt's style" 1>&2 && exit 1 || true
+# Check code conforms to go fmt
+style:
+	! gofmt -s -l $(GO_SRC) 2>&1 | read 2>/dev/null
+
+test:
+	go test -v -covermode=count -coverprofile=cover.out
+
+# Format the code
+fmt:
+	gofmt -s -w $(GO_SRC)
 
 .PHONY: test vet

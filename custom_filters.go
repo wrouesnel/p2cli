@@ -61,12 +61,12 @@ func filterWriteFile(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pon
 func filterMakeDirs(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
 	if !param.IsString() {
 		return nil, &pongo2.Error{
-			Sender:   "filter:write_file",
+			Sender:   "filter:make_dirs",
 			ErrorMsg: "Filter parameter must be of type 'string'.",
 		}
 	}
 
-	err := os.MkdirAll(in.String(), os.FileMode(0777))
+	err := os.MkdirAll(param.String(), os.FileMode(0777))
 	if err != nil {
 		return nil, &pongo2.Error{
 			Sender:   "filter:make_dirs",

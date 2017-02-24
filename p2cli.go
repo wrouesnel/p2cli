@@ -81,7 +81,7 @@ func (this ErrorEnvironmentVariables) Error() string {
 	return fmt.Sprintf("%s: %s", this.Reason, this.RawEnvVar)
 }
 
-func readRawInput(name string, source DataSource) []byte {
+func readRawInput(name string, source DataSource) ([]byte,error) {
 	var data []byte
 	var err error
 	switch source {
@@ -96,16 +96,22 @@ func readRawInput(name string, source DataSource) []byte {
 		// Read from environment key
 		data = []byte(os.Getenv(name))
 	default:
-		log.With("filename", name).Fatalln("Invalid data source specified.")
+		log.With("filename", name).Errorln("Invalid data source specified.")
+		return []byte{}, err
 	}
 
 	if err != nil {
-		log.With("filename", name).Fatalln("Could not read data:", err)
+		log.With("filename", name).Errorln("Could not read data:", err)
+		return []byte{}, err
 	}
-	return data
+	return data, nil
 }
 
 func main() {
+	os.Exit(realMain())
+}
+
+func realMain() int {
 	options := struct {
 		Help          goptions.Help `goptions:"-h, --help, description='Show this help'"`
 		PrintVersion  bool          `goptions:"-v, --version, description='Print version'"`
@@ -127,11 +133,12 @@ func main() {
 
 	if options.PrintVersion {
 		fmt.Println(Version)
-		os.Exit(0)
+		return 0
 	}
 
 	if options.TemplateFile == "" {
-		log.Fatalln("Template file must be specified!")
+		log.Errorln("Template file must be specified!")
+		return 1
 	}
 
 	// Register custom filter functions.
@@ -145,7 +152,8 @@ func main() {
 			for _, filter := range strings.Split(options.CustomFilters, ",") {
 				spec, found := customFilters[filter]
 				if !found {
-					log.Fatalln("This version of p2 does not support the", filter, "custom filter.")
+					log.Errorln("This version of p2 does not support the", filter, "custom filter.")
+					return 1
 				}
 
 				pongo2.RegisterFilter(filter, spec.FilterFunc)
@@ -163,27 +171,30 @@ func main() {
 		var ok bool
 		fileFormat, ok = dataFormats[strings.TrimLeft(path.Ext(options.DataFile), ".")]
 		if !ok {
-			log.Fatalln("Unrecognized file extension. If the file is in a supported format, try specifying it explicitely.")
+			log.Errorln("Unrecognized file extension. If the file is in a supported format, try specifying it explicitely.")
+			return 1
 		}
 		inputSource = SOURCE_FILE
 	} else if options.DataFile == "" && options.Format != "" {
 		var ok bool
 		fileFormat, ok = dataFormats[options.Format]
 		if !ok {
-			log.Fatalln("Unsupported input format:", options.Format)
+			log.Errorln("Unsupported input format:", options.Format)
+			return 1
 		}
 		inputSource = SOURCE_STDIN
 	} else {
 		var ok bool
 		fileFormat, ok = dataFormats[options.Format]
 		if !ok {
-			log.Fatalln("Unsupported input format:", options.Format)
+			log.Errorln("Unsupported input format:", options.Format)
+			return 1
 		}
 		inputSource = SOURCE_FILE
 	}
 
 	if options.UseEnvKey && options.DataFile == "" {
-		log.Fatalln("--use-env-key is incompatible with stdin file input.")
+		log.Errorln("--use-env-key is incompatible with stdin file input.")
 	} else if options.UseEnvKey {
 		inputSource = SOURCE_ENVKEY
 	}
@@ -192,7 +203,8 @@ func main() {
 	tmpl, err := pongo2.FromFile(options.TemplateFile)
 	if err != nil {
 		log.With("template", options.TemplateFile).
-			Fatalln("Could not template file:", err)
+			Errorln("Could not template file:", err)
+		return 1
 	}
 
 	// Get the input context
@@ -200,7 +212,11 @@ func main() {
 	case ENV:
 		err = func(inputData map[string]interface{}) error {
 			if inputSource != SOURCE_ENV {
-				lineScanner := bufio.NewScanner(bytes.NewReader(readRawInput(options.DataFile, inputSource)))
+				rawInput, err := readRawInput(options.DataFile, inputSource)
+				if err != nil {
+					return err
+				}
+				lineScanner := bufio.NewScanner(bytes.NewReader(rawInput))
 				for lineScanner.Scan() {
 					keyval := lineScanner.Text()
 					splitKeyVal := strings.SplitN(lineScanner.Text(), "=", 2)
@@ -247,17 +263,27 @@ func main() {
 			return nil
 		}(inputData)
 	case YAML:
-		err = yaml.Unmarshal(readRawInput(options.DataFile, inputSource), &inputData)
+		rawInput, err := readRawInput(options.DataFile, inputSource)
+		if err != nil {
+			return 1
+		}
+		err = yaml.Unmarshal(rawInput, &inputData)
 	case JSON:
-		err = json.Unmarshal(readRawInput(options.DataFile, inputSource), &inputData)
+		rawInput, err := readRawInput(options.DataFile, inputSource)
+		if err != nil {
+			return 1
+		}
+		err = json.Unmarshal(rawInput, &inputData)
 	default:
-		log.Fatalln("Unknown input format.")
+		log.Errorln("Unknown input format.")
+		return 1
 	}
 
 	if err != nil {
 		log.With("template", options.TemplateFile).
 			With("data", options.DataFile).
-			Fatalln("Error parsing input data:", err)
+			Errorln("Error parsing input data:", err)
+		return 1
 	}
 
 	if options.DumpInputData {
@@ -268,7 +294,8 @@ func main() {
 	if options.OutputFile != "" {
 		fileOut, err := os.OpenFile(options.OutputFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.FileMode(0777))
 		if err != nil {
-			log.Fatalln("Error opening output file for writing:", err)
+			log.Errorln("Error opening output file for writing:", err)
+			return 1
 		}
 		defer fileOut.Close()
 		outputWriter = io.Writer(fileOut)
@@ -281,7 +308,8 @@ func main() {
 	if err != nil {
 		log.With("template", options.TemplateFile).
 			With("data", options.DataFile).
-			Fatalln("Error parsing input data:", err)
+			Errorln("Error parsing input data:", err)
+		return 1
 	}
-	os.Exit(0)
+	return 0
 }

@@ -1,2 +1,5 @@
 p2
 tests/*.test
+*.orig
+cover.out
+cover.*.out

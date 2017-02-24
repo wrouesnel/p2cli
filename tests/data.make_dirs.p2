@@ -1,0 +1,2 @@
+{{ make_dirs_data | make_dirs:"tests/make_dirs.test" | write_file:"tests/data.make_dirs.test"}}
+
