@@ -9,9 +9,22 @@
 			"revisionTime": "2016-04-25T11:32:37+02:00"
 		},
 		{
+			"checksumSHA1": "qiENYqUrXwLDI5+u71L6UhfoOfE=",
 			"path": "github.com/flosch/pongo2",
-			"revision": "5c6b9724dc3ef94050696ff1ab594702504a9c43",
-			"revisionTime": "2016-08-13T13:28:59+02:00"
+			"revision": "5e81b817a0c48c1c57cdf1a9056cf76bdee02ca9",
+			"revisionTime": "2014-10-28T01:08:13+01:00",
+			"version": "v3.0",
+			"versionExact": "v3.0"
+		},
+		{
+			"path": "github.com/flosh/pongo2",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "HpnVP25yXZys8uwdVe25MKMIwn8=",
+			"path": "github.com/juju/errors",
+			"revision": "c7d06af17c68cd34c835053720b21f6549d9b0ee",
+			"revisionTime": "2017-07-03T13:00:42+12:00"
 		},
 		{
 			"path": "github.com/kballard/go-shellquote",
@@ -29,6 +42,10 @@
 			"path": "github.com/wrouesnel/go.log",
 			"revision": "943d79281e59b697452224306f4bb2bfbfcbd2a2",
 			"revisionTime": "2016-05-15T22:19:16+10:00"
+		},
+		{
+			"path": "github.com/wrouesnel/p2cli",
+			"revision": ""
 		},
 		{
 			"checksumSHA1": "CoRxz7vk573Zu/UcMS4PzpAsv3w=",
