@@ -76,12 +76,15 @@ script, and generates multiple output values. Example:
 `input.yml`:
 ```yaml
 users:
-- user: mike
+- user:
+  name: Mike
   content: This is Mike's content.
-- user: sally
+- user:
+  name: Sally
   content: This is Sally's content.
-- user: greg
-  content: This is greg's content.
+- user:
+  name: Greg
+  content: This is Greg's content.
 ```
 
 `template.p2`:
@@ -100,7 +103,7 @@ users:
 
 Now executing the template:
 ```sh
-$ p2 --enable-write_file -t template.p2 -i input.yml
+$ p2 -t template.p2 -i input.yml --enable-filters write_file
 
 
 
