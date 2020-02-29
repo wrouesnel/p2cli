@@ -26,38 +26,48 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var Version string = "development"
+// Version is populated by the build system.
+var Version = "development"
 
+// SupportedType is an enumeration of data types we support.
 type SupportedType int
 
 const (
+	// TypeUnknown is the default error type
 	TypeUnknown SupportedType = iota
-	TypeJSON    SupportedType = iota
-	TypeYAML    SupportedType = iota
-	TypeEnv     SupportedType = iota
+	// TypeJSON is JSON
+	TypeJSON SupportedType = iota
+	// TypeYAML is YAML
+	TypeYAML SupportedType = iota
+	// TypeEnv is key=value pseudo environment files.
+	TypeEnv SupportedType = iota
 )
 
+// DataSource is an enumeration of the sources of input data we can take.
 type DataSource int
 
 const (
-	SourceEnv    DataSource = iota // Input comes from environment
-	SourceEnvKey DataSource = iota // Input comes from environment key
-	SourceStdin  DataSource = iota // Input comes from stdin
-	SourceFile   DataSource = iota // Input comes from a file
+	// SourceEnv means input comes from environment variables
+	SourceEnv DataSource = iota
+	// SourceEnvKey means input comes from the value of a specific environment key
+	SourceEnvKey DataSource = iota
+	// SourceStdin means input comes from stdin
+	SourceStdin DataSource = iota
+	// SourceFile means input comes from a file
+	SourceFile DataSource = iota
 )
 
-var dataFormats map[string]SupportedType = map[string]SupportedType{
+var dataFormats = map[string]SupportedType{
 	"json": TypeJSON,
 	"yaml": TypeYAML,
 	"yml":  TypeYAML,
 	"env":  TypeEnv,
 }
 
-// Map of custom filters p2 implements. These are gated behind the --enable-filter
-// command line option as they can have unexpected or even unsafe behavior (i.e.
-// templates gain the ability to make filesystem modifications).
-// Disabled filters are stubbed out to allow for debugging.
-
+// CustomFilterSpec is a map of custom filters p2 implements. These are gated
+// behind the --enable-filter command line option as they can have unexpected
+// or even unsafe behavior (i.e. templates gain the ability to make filesystem
+//modifications). Disabled filters are stubbed out to allow for debugging.
 type CustomFilterSpec struct {
 	FilterFunc pongo2.FilterFunction
 	NoopFunc   pongo2.FilterFunction
@@ -69,17 +79,18 @@ var customFilters = map[string]CustomFilterSpec{
 }
 
 var (
-	inputData map[string]interface{} = make(map[string]interface{})
+	inputData = make(map[string]interface{})
 )
 
-// Error raised when an environment variable is improperly formatted
+// ErrorEnvironmentVariables is raised when an environment variable is improperly formatted
 type ErrorEnvironmentVariables struct {
 	Reason    string
 	RawEnvVar string
 }
 
-func (this ErrorEnvironmentVariables) Error() string {
-	return fmt.Sprintf("%s: %s", this.Reason, this.RawEnvVar)
+// Error implements error
+func (eev ErrorEnvironmentVariables) Error() string {
+	return fmt.Sprintf("%s: %s", eev.Reason, eev.RawEnvVar)
 }
 
 func readRawInput(name string, source DataSource) ([]byte, error) {
@@ -175,8 +186,8 @@ func realMain() int {
 	}
 
 	// Determine mode of operations
-	var fileFormat SupportedType = TypeUnknown
-	var inputSource DataSource = SourceEnv
+	var fileFormat SupportedType
+	inputSource := SourceEnv
 	if options.DataFile == "" && options.Format == "" {
 		fileFormat = TypeEnv
 		inputSource = SourceEnv
@@ -184,7 +195,7 @@ func realMain() int {
 		var ok bool
 		fileFormat, ok = dataFormats[strings.TrimLeft(path.Ext(options.DataFile), ".")]
 		if !ok {
-			log.Errorln("Unrecognized file extension. If the file is in a supported format, try specifying it explicitely.")
+			log.Errorln("Unrecognized file extension. If the file is in a supported format, try specifying it explicitly.")
 			return 1
 		}
 		inputSource = SourceFile
@@ -287,13 +298,15 @@ func realMain() int {
 			return nil
 		}(inputData)
 	case TypeYAML:
-		rawInput, err := readRawInput(options.DataFile, inputSource)
+		var rawInput []byte
+		rawInput, err = readRawInput(options.DataFile, inputSource)
 		if err != nil {
 			return 1
 		}
 		err = yaml.Unmarshal(rawInput, &inputData)
 	case TypeJSON:
-		rawInput, err := readRawInput(options.DataFile, inputSource)
+		var rawInput []byte
+		rawInput, err = readRawInput(options.DataFile, inputSource)
 		if err != nil {
 			return 1
 		}

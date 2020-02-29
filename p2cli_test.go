@@ -1,12 +1,12 @@
 package main
 
 import (
+	"fmt"
 	. "gopkg.in/check.v1"
 	"io/ioutil"
 	"os"
-	"testing"
-	"fmt"
 	"strings"
+	"testing"
 )
 
 // Hook up gocheck into the "go test" runner.
@@ -46,8 +46,8 @@ func (s *p2Integration) TestInputDataProducesIdenticalOutput(c *C) {
 	expectedOutput := MustReadFile("tests/data.out")
 
 	type tData struct {
-		InputFile  string	// Test input file
-		ExpectedOutputFile string	// Expected output file
+		InputFile          string // Test input file
+		ExpectedOutputFile string // Expected output file
 	}
 
 	testDatas := []string{
@@ -82,7 +82,7 @@ func (s *p2Integration) TestInputDataProducesIdenticalOutput(c *C) {
 		if err != nil {
 			panic(err)
 		}
-		os.Args = []string{"p2", "-f", strings.Split(td,".")[1],"-t", templateFile}
+		os.Args = []string{"p2", "-f", strings.Split(td, ".")[1], "-t", templateFile}
 		exit = realMain()
 		c.Check(exit, Equals, 0)
 		c.Check(MustReadFile(stdinToStdoutOutput), DeepEquals, expectedOutput)
@@ -90,7 +90,7 @@ func (s *p2Integration) TestInputDataProducesIdenticalOutput(c *C) {
 		// Check we can read the environment files
 		const EnvKey string = "P2_TEST_ENV_KEY"
 		envkeyOutput := fmt.Sprintf("%s.4.test", td)
-		os.Args = []string{"p2", "-f", strings.Split(td,".")[1],"-t", templateFile, "--use-env-key", "-i", EnvKey, "-o", envkeyOutput}
+		os.Args = []string{"p2", "-f", strings.Split(td, ".")[1], "-t", templateFile, "--use-env-key", "-i", EnvKey, "-o", envkeyOutput}
 		// Dump the data into an environment key
 		os.Setenv(EnvKey, string(MustReadFile(td)))
 		exit = realMain()
