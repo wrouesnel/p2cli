@@ -1,6 +1,0 @@
-build:
-  image: golang:1.6-wheezy
-  commands:
-  - go get
-  - go build -o p2
-  - go test
