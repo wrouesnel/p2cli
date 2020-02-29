@@ -144,7 +144,7 @@ func realMain() int {
 	// Register custom filter functions.
 	if options.CustomFilterNoops {
 		for filter, spec := range customFilters {
-			pongo2.RegisterFilter(filter, spec.NoopFunc)
+			_ = pongo2.RegisterFilter(filter, spec.NoopFunc)
 		}
 	} else {
 		// Register enabled custom-filters
@@ -156,7 +156,7 @@ func realMain() int {
 					return 1
 				}
 
-				pongo2.RegisterFilter(filter, spec.FilterFunc)
+				_ = pongo2.RegisterFilter(filter, spec.FilterFunc)
 			}
 		}
 	}
@@ -287,7 +287,7 @@ func realMain() int {
 	}
 
 	if options.DumpInputData {
-		fmt.Fprintln(os.Stderr, inputData)
+		_, _ = fmt.Fprintln(os.Stderr, inputData)
 	}
 
 	var outputWriter io.Writer
@@ -297,7 +297,7 @@ func realMain() int {
 			log.Errorln("Error opening output file for writing:", err)
 			return 1
 		}
-		defer fileOut.Close()
+		defer func() {_ = fileOut.Close()}()
 		outputWriter = io.Writer(fileOut)
 	} else {
 		outputWriter = os.Stdout
