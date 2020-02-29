@@ -13,16 +13,17 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/flosch/pongo2"
-	"github.com/kballard/go-shellquote"
-	"github.com/voxelbrain/goptions"
-	"github.com/wrouesnel/go.log"
-	"gopkg.in/yaml.v2"
+	"github.com/alecthomas/kingpin"
 	"io"
 	"io/ioutil"
 	"os"
 	"path"
 	"strings"
+
+	"github.com/flosch/pongo2"
+	"github.com/kballard/go-shellquote"
+	"github.com/wrouesnel/go.log"
+	"gopkg.in/yaml.v2"
 )
 
 var Version string = "development"
@@ -30,26 +31,26 @@ var Version string = "development"
 type SupportedType int
 
 const (
-	UNKNOWN SupportedType = iota
-	JSON    SupportedType = iota
-	YAML    SupportedType = iota
-	ENV     SupportedType = iota
+	TypeUnknown SupportedType = iota
+	TypeJSON    SupportedType = iota
+	TypeYAML    SupportedType = iota
+	TypeEnv     SupportedType = iota
 )
 
 type DataSource int
 
 const (
-	SOURCE_ENV    DataSource = iota // Input comes from environment
-	SOURCE_ENVKEY DataSource = iota // Input comes from environment key
-	SOURCE_STDIN  DataSource = iota // Input comes from stdin
-	SOURCE_FILE   DataSource = iota // Input comes from a file
+	SourceEnv    DataSource = iota // Input comes from environment
+	SourceEnvKey DataSource = iota // Input comes from environment key
+	SourceStdin  DataSource = iota // Input comes from stdin
+	SourceFile   DataSource = iota // Input comes from a file
 )
 
 var dataFormats map[string]SupportedType = map[string]SupportedType{
-	"json": JSON,
-	"yaml": YAML,
-	"yml":  YAML,
-	"env":  ENV,
+	"json": TypeJSON,
+	"yaml": TypeYAML,
+	"yml":  TypeYAML,
+	"env":  TypeEnv,
 }
 
 // Map of custom filters p2 implements. These are gated behind the --enable-filter
@@ -62,9 +63,9 @@ type CustomFilterSpec struct {
 	NoopFunc   pongo2.FilterFunction
 }
 
-var customFilters map[string]CustomFilterSpec = map[string]CustomFilterSpec{
-	"write_file": CustomFilterSpec{filterWriteFile, filterNoopPassthru},
-	"make_dirs":  CustomFilterSpec{filterMakeDirs, filterNoopPassthru},
+var customFilters = map[string]CustomFilterSpec{
+	"write_file": {filterWriteFile, filterNoopPassthru},
+	"make_dirs":  {filterMakeDirs, filterNoopPassthru},
 }
 
 var (
@@ -81,18 +82,18 @@ func (this ErrorEnvironmentVariables) Error() string {
 	return fmt.Sprintf("%s: %s", this.Reason, this.RawEnvVar)
 }
 
-func readRawInput(name string, source DataSource) ([]byte,error) {
+func readRawInput(name string, source DataSource) ([]byte, error) {
 	var data []byte
 	var err error
 	switch source {
-	case SOURCE_STDIN:
+	case SourceStdin:
 		// Read from stdin
 		name = "-"
 		data, err = ioutil.ReadAll(os.Stdin)
-	case SOURCE_FILE:
+	case SourceFile:
 		// Read from file
 		data, err = ioutil.ReadFile(name)
-	case SOURCE_ENVKEY:
+	case SourceEnvKey:
 		// Read from environment key
 		data = []byte(os.Getenv(name))
 	default:
@@ -113,28 +114,36 @@ func main() {
 
 func realMain() int {
 	options := struct {
-		Help          goptions.Help `goptions:"-h, --help, description='Show this help'"`
-		PrintVersion  bool          `goptions:"-v, --version, description='Print version'"`
-		DumpInputData bool          `goptions:"-d, --debug, description='Print Go serialization to stderr'"`
+		DumpInputData bool
 
-		Format       string `goptions:"-f, --format, description='Input data format [valid values: env,yaml,json]'"`
-		UseEnvKey    bool   `goptions:"--use-env-key, description='Treat --input as an environment key name to read.'"`
-		TemplateFile string `goptions:"-t, --template, description='Template file to process'"`
-		DataFile     string `goptions:"-i, --input, description='Input data path. Leave blank for stdin.'"`
-		OutputFile   string `goptions:"-o, --output, description='Output file. Leave blank for stdout.'"`
+		Format       string
+		UseEnvKey    bool
+		TemplateFile string
+		DataFile     string
+		OutputFile   string
 
-		CustomFilters     string `goptions:"--enable-filters, description='Enable custom p2 filters.'"`
-		CustomFilterNoops bool   `goptions:"--enable-noop-filters, description='Enable all custom filters in noop mode. Supercedes --enable-filters'"`
+		CustomFilters     string
+		CustomFilterNoops bool
 	}{
 		Format: "",
 	}
 
-	goptions.ParseAndFail(&options)
+	app := kingpin.New("p2cli", "Command line templating application based on pongo2")
+	app.Version(Version)
 
-	if options.PrintVersion {
-		fmt.Println(Version)
-		return 0
-	}
+	app.Flag("debug", "Print Go serialization to stderr and then exit").Short('d').BoolVar(&options.DumpInputData)
+	app.Flag("format", "Input data format").Default("env").Short('f').EnumVar(&options.Format, "env", "envkey", "json", "yml", "yaml")
+
+	app.Flag("use-env-key", "Treat --input as an environment key name to read.").BoolVar(&options.UseEnvKey)
+
+	app.Flag("template", "Template file to process").Short('t').Required().StringVar(&options.TemplateFile)
+	app.Flag("input", "Input data path. Leave blank for stdin.").Short('i').StringVar(&options.DataFile)
+	app.Flag("output", "Output file. Leave blank for stdout.").Short('o').StringVar(&options.OutputFile)
+
+	app.Flag("enable-filters", "Enable custom p2 filters.").StringVar(&options.CustomFilters)
+	app.Flag("enable-noop-filters", "Enable all custom filters in noop mode. Supercedes --enable-filters").BoolVar(&options.CustomFilterNoops)
+
+	kingpin.MustParse(app.Parse(os.Args[1:]))
 
 	if options.TemplateFile == "" {
 		log.Errorln("Template file must be specified!")
@@ -144,7 +153,7 @@ func realMain() int {
 	// Register custom filter functions.
 	if options.CustomFilterNoops {
 		for filter, spec := range customFilters {
-			_ = pongo2.RegisterFilter(filter, spec.NoopFunc)
+			pongo2.RegisterFilter(filter, spec.NoopFunc)
 		}
 	} else {
 		// Register enabled custom-filters
@@ -156,17 +165,17 @@ func realMain() int {
 					return 1
 				}
 
-				_ = pongo2.RegisterFilter(filter, spec.FilterFunc)
+				pongo2.RegisterFilter(filter, spec.FilterFunc)
 			}
 		}
 	}
 
 	// Determine mode of operations
-	var fileFormat SupportedType = UNKNOWN
-	var inputSource DataSource = SOURCE_ENV
+	var fileFormat SupportedType = TypeUnknown
+	var inputSource DataSource = SourceEnv
 	if options.DataFile == "" && options.Format == "" {
-		fileFormat = ENV
-		inputSource = SOURCE_ENV
+		fileFormat = TypeEnv
+		inputSource = SourceEnv
 	} else if options.DataFile != "" && options.Format == "" {
 		var ok bool
 		fileFormat, ok = dataFormats[strings.TrimLeft(path.Ext(options.DataFile), ".")]
@@ -174,7 +183,7 @@ func realMain() int {
 			log.Errorln("Unrecognized file extension. If the file is in a supported format, try specifying it explicitely.")
 			return 1
 		}
-		inputSource = SOURCE_FILE
+		inputSource = SourceFile
 	} else if options.DataFile == "" && options.Format != "" {
 		var ok bool
 		fileFormat, ok = dataFormats[options.Format]
@@ -182,7 +191,7 @@ func realMain() int {
 			log.Errorln("Unsupported input format:", options.Format)
 			return 1
 		}
-		inputSource = SOURCE_STDIN
+		inputSource = SourceStdin
 	} else {
 		var ok bool
 		fileFormat, ok = dataFormats[options.Format]
@@ -190,13 +199,13 @@ func realMain() int {
 			log.Errorln("Unsupported input format:", options.Format)
 			return 1
 		}
-		inputSource = SOURCE_FILE
+		inputSource = SourceFile
 	}
 
 	if options.UseEnvKey && options.DataFile == "" {
 		log.Errorln("--use-env-key is incompatible with stdin file input.")
 	} else if options.UseEnvKey {
-		inputSource = SOURCE_ENVKEY
+		inputSource = SourceEnvKey
 	}
 
 	// Load template
@@ -209,9 +218,9 @@ func realMain() int {
 
 	// Get the input context
 	switch fileFormat {
-	case ENV:
+	case TypeEnv:
 		err = func(inputData map[string]interface{}) error {
-			if inputSource != SOURCE_ENV {
+			if inputSource != SourceEnv {
 				rawInput, err := readRawInput(options.DataFile, inputSource)
 				if err != nil {
 					return err
@@ -262,13 +271,13 @@ func realMain() int {
 			}
 			return nil
 		}(inputData)
-	case YAML:
+	case TypeYAML:
 		rawInput, err := readRawInput(options.DataFile, inputSource)
 		if err != nil {
 			return 1
 		}
 		err = yaml.Unmarshal(rawInput, &inputData)
-	case JSON:
+	case TypeJSON:
 		rawInput, err := readRawInput(options.DataFile, inputSource)
 		if err != nil {
 			return 1
@@ -297,7 +306,7 @@ func realMain() int {
 			log.Errorln("Error opening output file for writing:", err)
 			return 1
 		}
-		defer func() {_ = fileOut.Close()}()
+		defer func() { _ = fileOut.Close() }()
 		outputWriter = io.Writer(fileOut)
 	} else {
 		outputWriter = os.Stdout

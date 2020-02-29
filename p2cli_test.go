@@ -109,7 +109,7 @@ func (s *p2Integration) TestVersionCommand(c *C) {
 }
 
 func (s *p2Integration) TestOnNoTemplateExitFail(c *C) {
-	os.Args = []string{"p2", "--template", ""}
+	os.Args = []string{"p2", "--template=\"\""}
 	exit := realMain()
 	c.Check(exit, Not(Equals), 0, Commentf("Exit code for command line: %v", os.Args))
 }
@@ -141,7 +141,7 @@ func (s *p2Integration) TestCustomFilters(c *C) {
 		// This test uses the write_file filter to produce its output.
 		outputFile := fmt.Sprintf("tests/data.write_file.test")
 		const expectedFile string = "tests/data.write_file.out"
-		os.Args = []string{"p2", "-t", templateFile, "-i", emptyData, "--enable-filters", "write_file"}
+		os.Args = []string{"p2", "-t", templateFile, "-i", emptyData, "--enable-filters=write_file"}
 		exit := realMain()
 		c.Assert(exit, Equals, 0, Commentf("Exit code for input %s != 0", emptyData))
 		c.Check(string(MustReadFile(outputFile)), DeepEquals, string(MustReadFile(expectedFile)))
@@ -155,7 +155,7 @@ func (s *p2Integration) TestCustomFilters(c *C) {
 		// This test uses the write_file filter to produce its output.
 		outputFile := fmt.Sprintf("tests/data.make_dirs.test")
 		const expectedFile string = "tests/data.make_dirs.out"
-		os.Args = []string{"p2", "-t", templateFile, "-i", emptyData, "--enable-filters", "make_dirs"}
+		os.Args = []string{"p2", "-t", templateFile, "-i", emptyData, "--enable-filters=make_dirs"}
 		exit := realMain()
 		c.Assert(exit, Equals, 0, Commentf("Exit code for input %s != 0", emptyData))
 		c.Check(string(MustReadFile(outputFile)), DeepEquals, string(MustReadFile(expectedFile)))
