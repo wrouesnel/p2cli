@@ -1,0 +1,16 @@
+github.com/Sirupsen/logrus v0.10.1-0.20160425093237-cd7d1bbe4106 h1:4Yx+/ddtzv6WYErHulHjSUZKgkC4zlkEtMPquKthNGs=
+github.com/Sirupsen/logrus v0.10.1-0.20160425093237-cd7d1bbe4106/go.mod h1:rmk17hk6i8ZSAJkSDa7nOxamrG+SP4P0mm+DAvExv4U=
+github.com/flosch/pongo2 v0.0.0-20141028000813-5e81b817a0c4 h1:TKrPydYuxU20WC6/sOVc1HZ4bfgkL1CAiZm6l9wbzBY=
+github.com/flosch/pongo2 v0.0.0-20141028000813-5e81b817a0c4/go.mod h1:rE0ErqqBaMcp9pzj8JxV1GcfDBpuypXYxlR1c37AUwg=
+github.com/juju/errors v0.0.0-20170703010042-c7d06af17c68/go.mod h1:W54LbzXuIE0boCoNJfwqpmkKJ1O4TCTZMetAt6jGk7Q=
+github.com/kballard/go-shellquote v0.0.0-20150810074751-d8ec1a69a250 h1:QyPDU73WRl/8CnuK3JltZLLuNhL3E4o3BROt4g8nFf0=
+github.com/kballard/go-shellquote v0.0.0-20150810074751-d8ec1a69a250/go.mod h1:CzGEWj7cYgsdH8dAjBGEr58BoE7ScuLd+fwFZ44+/x8=
+github.com/voxelbrain/goptions v0.0.0-20151102231003-26cb8b046923 h1:9wj8kG7h9BFfuAGtEgtShrnTNY27UI/v6/RGEpue+LA=
+github.com/voxelbrain/goptions v0.0.0-20151102231003-26cb8b046923/go.mod h1:DGCIhurYgnLz8J9ga1fMV/fbLDyUvTyrWXVWUIyJon4=
+github.com/wrouesnel/go.log v0.0.0-20160515121916-943d79281e59 h1:op6b2KTpOKhZLbnb7mP+gVqCE7CWhLH8p82P/KtGuSo=
+github.com/wrouesnel/go.log v0.0.0-20160515121916-943d79281e59/go.mod h1:M+RL7qk90hcQrY8+jZogGhRwOu8/AWdh44ZNKOKx0zc=
+golang.org/x/sys v0.0.0-20160429193239-b776ec39b3e5/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
+gopkg.in/check.v1 v1.0.0-20160105164936-4f90aeace3a2 h1:+j1SppRob9bAgoYmsdW9NNBdKZfgYuWpqnYHv78Qt8w=
+gopkg.in/check.v1 v1.0.0-20160105164936-4f90aeace3a2/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
+gopkg.in/yaml.v2 v2.0.0-20160301204022-a83829b6f129 h1:RBgb9aPUbZ9nu66ecQNIBNsA7j3mB5h8PNDIfhPjaJg=
+gopkg.in/yaml.v2 v2.0.0-20160301204022-a83829b6f129/go.mod h1:JAlM8MvJe8wmxCU4Bli9HhUf9+ttbYbLASfIpnQbh74=
