@@ -1,5 +1,7 @@
-p2
-tests/*.test
+/p2
+/tests/*.test
 *.orig
-cover.out
-cover.*.out
+/cover.out
+/cover.*.out
+/.idea
+/.vscode
