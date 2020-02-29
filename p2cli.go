@@ -124,6 +124,8 @@ func realMain() int {
 
 		CustomFilters     string
 		CustomFilterNoops bool
+
+		Autoescape bool
 	}{
 		Format: "",
 	}
@@ -142,6 +144,8 @@ func realMain() int {
 
 	app.Flag("enable-filters", "Enable custom p2 filters.").StringVar(&options.CustomFilters)
 	app.Flag("enable-noop-filters", "Enable all custom filters in noop mode. Supercedes --enable-filters").BoolVar(&options.CustomFilterNoops)
+
+	app.Flag("autoescape", "Enable autoescaping (disabled by default)").BoolVar(&options.Autoescape)
 
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 
@@ -209,7 +213,18 @@ func realMain() int {
 	}
 
 	// Load template
-	tmpl, err := pongo2.FromFile(options.TemplateFile)
+	templateBytes, err := ioutil.ReadFile(options.TemplateFile)
+	if err != nil {
+		log.Errorln("Could not read template file:", err)
+		return 1
+	}
+
+	templateString := string(templateBytes)
+	if !options.Autoescape {
+		templateString = fmt.Sprintf("{%% autoescape off %%}%s{%% endautoescape %%}", string(templateBytes))
+	}
+
+	tmpl, err := pongo2.FromString(templateString)
 	if err != nil {
 		log.With("template", options.TemplateFile).
 			Errorln("Could not template file:", err)
