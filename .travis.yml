@@ -5,13 +5,13 @@ before_install:
 - go get -v github.com/mattn/goveralls
 script:
 - make all
-- $HOME/gopath/bin/goveralls -coverprofile=cover.out -service=travis-ci
+- "$HOME/gopath/bin/goveralls -coverprofile=cover.out -service=travis-ci"
 deploy:
   skip_cleanup: true
   provider: releases
   api_key:
-    secure: cXyCEOcFY7pVdLDtN6BTCgeghOtsy+qTZgHiGZIM50g5/ydOzxyUxvTX3UcQ94yFelJlCj6pBPwdlPgv4EKYgXxsnZtervEm9xR5AlDW4GzijkMLYalHdsrQyoPN+WQL0bEyELIwPrHgqL5IaEwzB1SC45HxgT1Pv7UixkIxv0WIw/+9oGY6JTtqj2zurjiOklw6f32kzXGAD+sa9QgzKuMnFnMGuddQgor09kVlvRUtzoR51GUUztwfcKmDciNs8Zer0X0t83UZ0wXkGwTv74vYnt0/+r73FeWJlAC6u7bmlVj6Xspj2Zhs1H7zjVIs4UEKfiDE1R6GWg63Gub+jNTON/kUEmHx+dcfPlmPQjkiFTQqXGVlBEkKmCOjPmQBsbA9VgsDGvhDVqne/d2QHyg2lwx1YJQVopngUbShHlMm4f9QU2axlHQrRb75/+dGduINvtNzOtNKdk3/CaVxadUW5dgcEojyLmmYqtISTP6dFIH7IdLOUpgws8LILpQkRk6ktcW5jivPDoZxWCjPEnE5+dUkl3lVDxfXFzEtwQb85jHUX7VcpLH0b0U8QCBnsawHKF3+YRiXswM+uWK7kE/QdPREl8CzNnKKPVUC+rlBe+9mQr3DjhmOsnlYvgKwA3R/NGkkLJARp3T+nGWobyOVxAm1yiwZJSa7h1A8WMM=
-  file: $GOPATH/src/github.com/wrouesnel/p2cli/p2
+    secure: gYVdkDRCClHgB3HSB7X8p43RCgMUT+H4VqklhkFXxvtI+XfY3fv3Dg8uodsMJFbn8EQ9R/bt2Z0Tv8wx3qmnP9+GuXblJOLXg31a5ORVCIackhOQmydW2ne81o7yg3z3KTfqoc2rkWK9Wn3nOFBdyNMdgk7qL6VHzQMuhF8rm5H+7PiyQkNqp6eYSj0n6VWL0TMg8mVfIzPbEr30taIcQVBEHWZqUBXhoV8o34y20+Su/odo4Egc+CBXzSPYpfjxVk5L2RJdY/aciyDGLf7ouOFRAld0OrdlFhFsb6Fj4O4LE9DLGp/pr628jAaDfOHMSEi0jVhNPC8M79zT6g59Pfk+hEtetZ08hm3IpdnNTKFSR/FajTSzmJoL6Ny5x990i0pAEYZ0F44JJ3zUgqJR9thZ99AM9dgiRB6tbx3p+WrklFswRnxZgxI3e1UBs61Od+nuOvQdH6mDL2PmNjxSvitPoRpxsAu5zAdJAJXL25slwlzBheY0207ELt5m5n4eEDtVvL9ehrqOKlu69Py0f4KcC7drcggr36hoXDvXgj5qcuEyPqVpSMpDQcpMmqHZrP/0WFGptqx7PquFDjexFL9qcEr7YtLIexk1JH7bjuHi1mQsEIeZhQfcUPwjEgH02LOh96KsoIQ9Wwv1zmL4fw0xoWhjJlq28Y4X2d2P6Uc=
+  file: "$GOPATH/src/github.com/wrouesnel/p2cli/p2"
   on:
     tags: true
     repo: wrouesnel/p2cli
