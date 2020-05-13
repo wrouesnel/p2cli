@@ -138,6 +138,12 @@ containing the content from our macro.
 Note that until pongo2 supports multiple filter arguments, the file
 output plugin creates files with the maximum possible umask of the user.
 
+#### Run p2 in docker
+```
+docker build . -t p2
+docker run -v $(pwd):/t -ti p2 -t /t/template.p2 -i /t/input.yml
+```
+
 ## Building
 
 It is recommended to build using the included Makefile. This correctly sets up
