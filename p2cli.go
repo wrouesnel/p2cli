@@ -13,16 +13,17 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/alecthomas/kingpin"
 	"io"
 	"io/ioutil"
 	"os"
 	"path"
 	"strings"
 
+	"github.com/alecthomas/kingpin"
+
 	"github.com/flosch/pongo2"
 	"github.com/kballard/go-shellquote"
-	"github.com/wrouesnel/go.log"
+	log "github.com/wrouesnel/go.log"
 	"gopkg.in/yaml.v2"
 )
 
@@ -232,7 +233,7 @@ func realMain() int {
 
 	templateString := string(templateBytes)
 	if !options.Autoescape {
-		templateString = fmt.Sprintf("{%% autoescape off %%}%s{%% endautoescape %%}", string(templateBytes))
+		pongo2.SetAutoescape(false)
 	}
 
 	tmpl, err := pongo2.FromString(templateString)
