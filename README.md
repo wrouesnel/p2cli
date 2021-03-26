@@ -103,7 +103,7 @@ users:
 
 Now executing the template:
 ```sh
-$ p2 -t template.p2 -i input.yml --enable-filters write_file
+$ p2 -t template.p2 -i input.yml -f yaml --enable-filters write_file
 
 
 
