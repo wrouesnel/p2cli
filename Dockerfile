@@ -1,10 +1,23 @@
-FROM golang:1.14 AS build
-RUN go get -v github.com/wrouesnel/p2cli
-WORKDIR $GOPATH/src/github.com/wrouesnel/p2cli
-RUN CGO_ENABLED=0 GOOS=linux go build -a \
-    -ldflags "-extldflags '-static' -X main.Version=$(shell git describe --long --dirty)" \
-    -o /p2 .
+ARG GO_VER=1.16
+FROM golang:${GO_VER} AS build
+
+ARG GOOS=linux
+ARG GOARCH=amd64
+ARG VERSION
+
+COPY . /git
+WORKDIR /git
+RUN VERSION=${VERSION} make clean p2 GOOS=$GOOS GOARCH=$GOARCH
+
+
+FROM alpine as compress
+
+COPY --from=build /git/p2 /p2
+
+RUN apk add upx
+RUN upx --ultra-brute -q /p2 && upx -t /p2
+
 
 FROM scratch
-COPY --from=build /p2 /p2
+COPY --from=compress /p2 /p2
 ENTRYPOINT ["/p2"]
