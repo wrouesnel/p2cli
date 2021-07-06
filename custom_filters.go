@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/flosch/pongo2"
+	"github.com/flosch/pongo2/v4"
 	"os"
 )
 

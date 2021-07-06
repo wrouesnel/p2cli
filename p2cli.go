@@ -13,17 +13,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/alecthomas/kingpin"
 	"io"
 	"io/ioutil"
 	"os"
 	"path"
 	"strings"
 
-	"github.com/alecthomas/kingpin"
-
-	"github.com/flosch/pongo2"
+	"github.com/flosch/pongo2/v4"
 	"github.com/kballard/go-shellquote"
-	log "github.com/wrouesnel/go.log"
+	"github.com/wrouesnel/go.log"
 	"gopkg.in/yaml.v2"
 )
 
@@ -146,7 +145,7 @@ func realMain() int {
 	app.Version(Version)
 
 	app.Flag("debug", "Print Go serialization to stderr and then exit").Short('d').BoolVar(&options.DumpInputData)
-	app.Flag("format", "Input data format").Default("env").Short('f').EnumVar(&options.Format, "env", "envkey", "json", "yml", "yaml")
+	app.Flag("format", "Input data format").Default("").Short('f').EnumVar(&options.Format, "", "env", "envkey", "json", "yml", "yaml")
 
 	app.Flag("use-env-key", "Treat --input as an environment key name to read.").BoolVar(&options.UseEnvKey)
 

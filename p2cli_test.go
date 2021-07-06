@@ -102,12 +102,6 @@ func (s *p2Integration) TestInputDataProducesIdenticalOutput(c *C) {
 	os.Stdout = origStdout
 }
 
-func (s *p2Integration) TestVersionCommand(c *C) {
-	os.Args = []string{"p2", "--version"}
-	exit := realMain()
-	c.Check(exit, Equals, 0, Commentf("Exit code for command line: %v", os.Args))
-}
-
 func (s *p2Integration) TestOnNoTemplateExitFail(c *C) {
 	os.Args = []string{"p2", "--template=\"\""}
 	exit := realMain()

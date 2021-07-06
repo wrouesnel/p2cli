@@ -17,7 +17,8 @@ style:
 	! gofmt -s -l $(GO_SRC) 2>&1 | read 2>/dev/null
 
 test:
-	go test -v -covermode=count -coverprofile=cover.out
+	mkdir -p coverage
+	go test -v -covermode=count -coverprofile=coverage/test.cov
 
 # Format the code
 fmt:
