@@ -42,6 +42,36 @@ cat someYaml | p2 -t template.j2 -f yaml
 
 ### Advanced Usage
 
+#### Special Output Functions
+
+Several utility functions are provided to improve the configuration file
+templating experience:
+
+* `SetOwner` - try and set the owner of the output file to the supplied argument.
+* `SetGroup` - try and get the group of the output file to the supplied argument.
+* `SetMode` - try and set the mode of the output file to the supplied argument.
+
+Additionally, special variables are exposed under the key "p2":
+
+* `p2.OutputPath` - return the output path of the current template.
+* `p2.OutputName` - return the basename of the output path.
+* `p2.OutputDir` - return the directory of the current output path.
+
+#### Directory tree templating via `--directory-mode`
+
+Invoking `p2` with the `--directory-mode` option causes it to expect that the template file
+path is in fact a directory tree root which should be duplicated and copied to
+1:1 to the output path, which also must be a directory. This is useful for
+templating large numbers of files in complex configurations using a single
+input source.
+
+In this mode, directives such as `write_file` execute relative to to the
+template file subpath they are found in - i.e. the working directory is
+changed to be the output directory location of the input template file. 
+
+The `SetOwner`, `SetGroup`, and `SetMode` special filters exist principally
+to support this mode.
+
 #### Side-effectful filters
 `p2` allows enabling a suite of non-standard pongo2 filters which have
 side-effects on the system. These filters add a certain amount of

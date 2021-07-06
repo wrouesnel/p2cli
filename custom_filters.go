@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/flosch/pongo2/v4"
 	"os"
@@ -24,8 +25,8 @@ func filterNoop(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.E
 func filterWriteFile(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
 	if !in.IsString() {
 		return nil, &pongo2.Error{
-			Sender:   "filter:write_file",
-			Filename: "Filter input must be of type 'string'.",
+			Sender:    "filter:write_file",
+			OrigError: errors.New("Filter input must be of type 'string'."),
 		}
 		//return nil, &pongo2.Error{
 		//	Sender:   "filter:write_file",
@@ -35,8 +36,8 @@ func filterWriteFile(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pon
 
 	if !param.IsString() {
 		return nil, &pongo2.Error{
-			Sender:   "filter:write_file",
-			Filename: "Filter parameter must be of type 'string'.",
+			Sender:    "filter:write_file",
+			OrigError: errors.New("Filter parameter must be of type 'string'."),
 		}
 		//return nil, &pongo2.Error{
 		//	Sender:   "filter:write_file",
@@ -60,8 +61,8 @@ func filterWriteFile(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pon
 	_, werr := f.WriteString(in.String())
 	if werr != nil {
 		return nil, &pongo2.Error{
-			Sender:   "filter:write_file",
-			Filename: fmt.Sprintf("Could not write file for output: %s", werr.Error()),
+			Sender:    "filter:write_file",
+			OrigError: fmt.Errorf("Could not write file for output: %s", werr.Error()),
 		}
 		//return nil, &pongo2.Error{
 		//	Sender:   "filter:write_file",
@@ -77,8 +78,8 @@ func filterWriteFile(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pon
 func filterMakeDirs(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
 	if !param.IsString() {
 		return nil, &pongo2.Error{
-			Sender:   "filter:make_dirs",
-			Filename: "Filter parameter must be of type 'string'.",
+			Sender:    "filter:make_dirs",
+			OrigError: errors.New("Filter parameter must be of type 'string'."),
 		}
 		//return nil, &pongo2.Error{
 		//	Sender:   "filter:make_dirs",
@@ -89,8 +90,8 @@ func filterMakeDirs(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pong
 	err := os.MkdirAll(param.String(), os.FileMode(0777))
 	if err != nil {
 		return nil, &pongo2.Error{
-			Sender:   "filter:make_dirs",
-			Filename: fmt.Sprintf("Could not create directories: %s %s", in.String(), err.Error()),
+			Sender:    "filter:make_dirs",
+			OrigError: fmt.Errorf("Could not create directories: %s %s", in.String(), err.Error()),
 		}
 		//return nil, &pongo2.Error{
 		//	Sender:   "filter:make_dirs",

@@ -1,0 +1,5 @@
+# OutputPath:        {{ p2.OutputPath }}
+# OutputRelPath:     {{ p2.OutputRelPath }}
+# OutputName:        {{ p2.OutputName }}
+# OutputDir:         {{ p2.OutputDir }}
+# OutputRelPath:     {{ p2.OutputRelPath }}

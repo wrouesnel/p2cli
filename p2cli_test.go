@@ -162,3 +162,11 @@ func (s *p2Integration) TestCustomFilters(c *C) {
 		os.RemoveAll(createdDirectory)
 	}
 }
+
+func (s *p2Integration) TestDirectoryMode(c *C) {
+	os.Args = []string{"p2", "--directory-mode", "-t", "tests/directory-mode/templates",
+		"-o", "tests/directory-mode/output"}
+
+	exit := realMain()
+	c.Assert(exit, Equals, 0, Commentf("Exit code for dirextory mode != 0"))
+}

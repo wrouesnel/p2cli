@@ -12,12 +12,14 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/alecthomas/kingpin"
-	"io"
+	"github.com/wrouesnel/p2cli/templating"
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/flosch/pongo2/v4"
@@ -137,6 +139,8 @@ func realMain() int {
 		CustomFilterNoops bool
 
 		Autoescape bool
+
+		DirectoryMode bool
 	}{
 		Format: "",
 	}
@@ -150,6 +154,7 @@ func realMain() int {
 	app.Flag("use-env-key", "Treat --input as an environment key name to read.").BoolVar(&options.UseEnvKey)
 
 	app.Flag("template", "Template file to process").Short('t').Required().StringVar(&options.TemplateFile)
+	app.Flag("directory-mode", "Treat template path as directory-tree, output path as target directory").BoolVar(&options.DirectoryMode)
 	app.Flag("input", "Input data path. Leave blank for stdin.").Short('i').StringVar(&options.DataFile)
 	app.Flag("output", "Output file. Leave blank for stdout.").Short('o').StringVar(&options.OutputFile)
 
@@ -163,6 +168,18 @@ func realMain() int {
 	if options.TemplateFile == "" {
 		log.Errorln("Template file must be specified!")
 		return 1
+	}
+
+	if options.DirectoryMode {
+		tst, _ := os.Stat(options.TemplateFile)
+		if !tst.IsDir() {
+			log.Errorln("Template path must be a directory in directory mode:", options.TemplateFile)
+		}
+
+		ost, _ := os.Stat(options.OutputFile)
+		if !ost.IsDir() {
+			log.Errorln("Output path must be an existing directory in directory mode:", options.TemplateFile)
+		}
 	}
 
 	// Register custom filter functions.
@@ -184,6 +201,12 @@ func realMain() int {
 			}
 		}
 	}
+
+	// Register the default custom filters. These are replaced each file execution later, but we
+	// need the names in-scope here.
+	pongo2.RegisterFilter("SetOwner", templating.FilterSetOwner)
+	pongo2.RegisterFilter("SetGroup", templating.FilterSetGroup)
+	pongo2.RegisterFilter("SetMode", templating.FilterSetMode)
 
 	// Determine mode of operations
 	var fileFormat SupportedType
@@ -223,25 +246,7 @@ func realMain() int {
 		inputSource = SourceEnvKey
 	}
 
-	// Load template
-	templateBytes, err := ioutil.ReadFile(options.TemplateFile)
-	if err != nil {
-		log.Errorln("Could not read template file:", err)
-		return 1
-	}
-
-	templateString := string(templateBytes)
-	if !options.Autoescape {
-		pongo2.SetAutoescape(false)
-	}
-
-	tmpl, err := pongo2.FromString(templateString)
-	if err != nil {
-		log.With("template", options.TemplateFile).
-			Errorln("Could not template file:", err)
-		return 1
-	}
-
+	var err error
 	// Get the input context
 	switch fileFormat {
 	case TypeEnv:
@@ -327,26 +332,125 @@ func realMain() int {
 		_, _ = fmt.Fprintln(os.Stderr, inputData)
 	}
 
-	var outputWriter io.Writer
-	if options.OutputFile != "" {
-		fileOut, err := os.OpenFile(options.OutputFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.FileMode(0777))
-		if err != nil {
-			log.Errorln("Error opening output file for writing:", err)
-			return 1
-		}
-		defer func() { _ = fileOut.Close() }()
-		outputWriter = io.Writer(fileOut)
-	} else {
-		outputWriter = os.Stdout
+	if !options.Autoescape {
+		pongo2.SetAutoescape(false)
 	}
 
-	// Everything loaded, so try rendering the template.
-	err = tmpl.ExecuteWriter(pongo2.Context(inputData), outputWriter)
+	// Load all templates and their relative paths
+	templates := make(map[string]*pongo2.Template)
+	inputMaps := make(map[string]string)
+
+	if options.DirectoryMode {
+		err := filepath.Walk(options.TemplateFile, func(path string, info os.FileInfo, err error) error {
+			if info.IsDir() {
+				return nil
+			}
+
+			relPath, err := filepath.Rel(options.TemplateFile, path)
+			if err != nil {
+				return err
+			}
+
+			log.Debugf("Template file: %v", relPath)
+			tmpl := LoadTemplate(path)
+			if tmpl == nil {
+				log.Errorln("Error loading template:", path)
+				return errors.New("Error loading template")
+			}
+
+			outputPath, err := filepath.Abs(filepath.Join(options.OutputFile, relPath))
+			if err != nil {
+				log.Errorln("Could not determine absolute path of output file", options.OutputFile, relPath)
+				return errors.New("Error determining output path")
+			}
+
+			templates[outputPath] = tmpl
+			inputMaps[outputPath] = path
+			return nil
+		})
+		if err != nil {
+			log.Errorln("Error while walking input directory path:", options.TemplateFile)
+			return 1
+		}
+	} else {
+		// Just load the template as the output file
+		tmpl := LoadTemplate(options.TemplateFile)
+		if tmpl == nil {
+			log.Errorln("Error loading template:", options.TemplateFile)
+			return 1
+		}
+
+		absOutputFile := ""
+		if options.OutputFile != "" {
+			absOutputFile, err = filepath.Abs(options.OutputFile)
+			if err != nil {
+				log.Errorln("Could not determine absolute path of output file:", err)
+				return 1
+			}
+		}
+
+		templates[absOutputFile] = tmpl
+	}
+
+	// If we're in directory mode then we'll create a directory tree. If we're not, then we won't.
+	if options.DirectoryMode {
+		for outputPath := range templates {
+			if err := os.MkdirAll(filepath.Dir(outputPath), os.FileMode(0777)); err != nil {
+				log.Errorln("Error while creating directory for output")
+			}
+		}
+	}
+
+	rootDir := options.OutputFile
+	if !options.DirectoryMode {
+		rootDir, err = os.Getwd()
+		if err != nil {
+			log.Errorln("Error getting working directory:", err)
+			return 1
+		}
+	}
+
+	rootDir, err = filepath.Abs(rootDir)
 	if err != nil {
-		log.With("template", options.TemplateFile).
-			With("data", options.DataFile).
-			Errorln("Error parsing input data:", err)
+		log.Errorln("Could not determine absolute path of root dir", err)
 		return 1
 	}
+
+	failed := false
+	for outputPath, tmpl := range templates {
+		if err := templating.ExecuteTemplate(tmpl, inputData, outputPath, rootDir); err != nil {
+			log.
+				With("template_path", inputMaps[outputPath]).
+				With("output_path", outputPath).Errorln("Failed to execute template:", err)
+			failed = true
+		}
+
+	}
+
+	if failed {
+		log.Errorln("Errors encountered during template processing")
+		return 1
+	}
+
 	return 0
+}
+
+func LoadTemplate(templatePath string) *pongo2.Template {
+	// Load template
+	templateBytes, err := ioutil.ReadFile(templatePath)
+	if err != nil {
+		log.Errorln("Could not read template file:", err)
+		return nil
+	}
+
+	templateString := string(templateBytes)
+
+	tmpl, err := pongo2.FromString(templateString)
+	if err != nil {
+		log.With("template", templatePath).
+			Errorln("Could not template file:", err)
+		return nil
+	}
+
+	return tmpl
 }
