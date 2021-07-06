@@ -1,5 +1,5 @@
 # p2cli
-[![Build Status](https://travis-ci.org/wrouesnel/p2cli.svg?branch=master)](https://travis-ci.org/wrouesnel/p2cli)
+![Build Status](https://github.com/wrouesnel/p2cli/actions/workflows/release.yml/badge.svg?branch=master)
 [![Coverage Status](https://coveralls.io/repos/github/wrouesnel/p2cli/badge.svg?branch=master)](https://coveralls.io/github/wrouesnel/p2cli?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/wrouesnel/p2cli)](https://goreportcard.com/report/github.com/wrouesnel/p2cli)
 
