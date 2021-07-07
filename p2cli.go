@@ -20,6 +20,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/flosch/pongo2/v4"
@@ -30,6 +31,9 @@ import (
 
 // Version is populated by the build system.
 var Version = "development"
+
+// Copied from pongo2.context
+var reIdentifiers = regexp.MustCompile("^[a-zA-Z0-9_]+$")
 
 // SupportedType is an enumeration of data types we support.
 type SupportedType int
@@ -299,7 +303,12 @@ func realMain() int {
 						})
 					}
 
-					inputData[splitKeyVal[0]] = splitKeyVal[1]
+					// os.Environ consumption has special-case logic. Since there's all sorts of things
+					// which can end up in the environment, we want to filter here only for keys which we
+					// like.
+					if reIdentifiers.MatchString(splitKeyVal[0]) {
+						inputData[splitKeyVal[0]] = splitKeyVal[1]
+					}
 				}
 			}
 			return nil

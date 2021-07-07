@@ -170,3 +170,15 @@ func (s *p2Integration) TestDirectoryMode(c *C) {
 	exit := realMain()
 	c.Assert(exit, Equals, 0, Commentf("Exit code for dirextory mode != 0"))
 }
+
+// TestInvalidEnvironmentVariables tests that invalid environment variables in the input still allow the the template
+// to be generated successfully.
+func (s *p2Integration) TestInvalidEnvironmentVariables(c *C) {
+	// Check that invalid OS identifiers are filtered out.
+	os.Setenv("BASH_FUNC_x%%", "somevalue")
+	os.Args = []string{"p2", "-t", "tests/data.p2", "-o", "data.invalid.env"}
+	exit := realMain()
+	c.Check(exit, Equals, 0)
+	c.Assert(exit, Equals, 0, Commentf("Exit code with invalid data in environment != 0"))
+	os.Unsetenv("BASH_FUNC_x%%")
+}
