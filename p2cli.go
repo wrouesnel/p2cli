@@ -174,11 +174,13 @@ func realMain() int {
 		tst, _ := os.Stat(options.TemplateFile)
 		if !tst.IsDir() {
 			log.Errorln("Template path must be a directory in directory mode:", options.TemplateFile)
+			return 1
 		}
 
 		ost, _ := os.Stat(options.OutputFile)
 		if !ost.IsDir() {
 			log.Errorln("Output path must be an existing directory in directory mode:", options.TemplateFile)
+			return 1
 		}
 	}
 
