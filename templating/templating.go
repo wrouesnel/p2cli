@@ -1,15 +1,20 @@
 package templating
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/flosch/pongo2/v4"
+	"github.com/pelletier/go-toml"
 	log "github.com/wrouesnel/go.log"
+	"gopkg.in/yaml.v2"
 	"io"
 	"os"
 	"os/user"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 // Directory Mode filters are special filters which are activated during directory mode processing. They do things
@@ -133,6 +138,128 @@ func FilterSetMode(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo
 		}
 	}
 	return pongo2.AsValue(""), nil
+}
+
+
+func FilterIndent(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+	if !in.IsString() {
+		return nil, &pongo2.Error{
+			Sender:    "filter:Indent",
+			OrigError: errors.New("Filter input must be of type 'string'."),
+		}
+	}
+
+	var indent string
+	if param.IsString() {
+		indent = param.String()
+	} else if param.IsInteger() {
+		indent = strings.Repeat(" ", param.Integer())
+	} else {
+		return nil, &pongo2.Error{
+			Sender:    "filter:Indent",
+			OrigError: errors.New("Filter param must be of type 'string'."),
+		}
+	}
+
+	input := in.String()
+
+	splitStr := strings.Split(input, "\n")
+	for idx, v := range splitStr {
+		splitStr[idx] = fmt.Sprintf("%s%s",indent,v)
+	}
+	return pongo2.AsValue(strings.Join(splitStr, "\n")), nil
+}
+
+func FilterToJson(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+	intf := in.Interface()
+
+	useIndent := true
+	indent := ""
+	if param.IsInteger() {
+		indent = strings.Repeat(" ", param.Integer())
+	} else if param.IsBool() {
+		indent = "    "
+	} else if param.IsString() {
+		indent = param.String()
+	} else {
+		// We will not be using the indent
+		useIndent = false
+	}
+
+	var b []byte
+	var err error
+	if useIndent {
+		b, err = json.MarshalIndent(intf, "", indent)
+	} else {
+		b, err = json.Marshal(intf)
+	}
+
+	if err != nil {
+		return nil, &pongo2.Error{
+			Sender: "filter:ToJson",
+			OrigError: err,
+		}
+	}
+
+	return pongo2.AsValue(string(b)), nil
+}
+
+func FilterToYaml(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+	intf := in.Interface()
+
+	b, err := yaml.Marshal(intf)
+	if err != nil {
+		return nil, &pongo2.Error{
+			Sender: "filter:ToJson",
+			OrigError: err,
+		}
+	}
+	return pongo2.AsValue(string(b)), nil
+}
+
+func FilterToToml(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+	intf := in.Interface()
+
+	b, err := toml.Marshal(intf)
+	if err != nil {
+		return nil, &pongo2.Error{
+			Sender: "filter:ToToml",
+			OrigError: err,
+		}
+	}
+	return pongo2.AsValue(string(b)), nil
+}
+
+func FilterToBase64(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+	if !in.IsString() {
+		return nil, &pongo2.Error{
+			Sender:    "filter:ToBase64",
+			OrigError: errors.New("Filter input must be of type 'string'."),
+		}
+	}
+
+	output := base64.StdEncoding.EncodeToString([]byte(in.String()))
+
+	return pongo2.AsValue(output), nil
+}
+
+func FilterFromBase64(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+	if !in.IsString() {
+		return nil, &pongo2.Error{
+			Sender:    "filter:FromBase64",
+			OrigError: errors.New("Filter input must be of type 'string'."),
+		}
+	}
+
+	output, err := base64.StdEncoding.DecodeString(in.String())
+	if err != nil {
+		return nil, &pongo2.Error{
+			Sender:    "filter:FromBase64",
+			OrigError: err,
+		}
+	}
+
+	return pongo2.AsValue(string(output)), nil
 }
 
 func ExecuteTemplate(tmpl *pongo2.Template, inputData pongo2.Context, outputPath string, rootDir string) error {

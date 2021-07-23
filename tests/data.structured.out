@@ -1,0 +1,667 @@
+JSON
+[{"AppArmorProfile":"docker-default","Args":[],"Config":{"AttachStderr":false,"AttachStdin":false,"AttachStdout":false,"Cmd":["/etc/confluent/docker/run"],"Domainname":"","Entrypoint":null,"Env":["ZOOKEEPER_CLIENT_PORT=2181","ZOOKEEPER_TICK_TIME=2000","PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin","ALLOW_UNSIGNED=false","PYTHON_VERSION=2.7.9-1","PYTHON_PIP_VERSION=8.1.2","SCALA_VERSION=2.12","KAFKA_VERSION=","CONFLUENT_PLATFORM_LABEL=","CONFLUENT_VERSION=5.5.0","CONFLUENT_DEB_VERSION=1","ZULU_OPENJDK_VERSION=8=8.38.0.13","LANG=C.UTF-8","CUB_CLASSPATH=/etc/confluent/docker/docker-utils.jar","COMPONENT=zookeeper"],"ExposedPorts":{"2181/tcp":{},"2888/tcp":{},"3888/tcp":{}},"Hostname":"124403b9f8c9","Image":"confluentinc/cp-zookeeper:latest","Labels":{"com.docker.compose.config-hash":"b6fa02ab96018cc522f057c093bf80ddefcb6e4e2077821b14cd0f6f1c2fd05b","com.docker.compose.container-number":"1","com.docker.compose.oneoff":"False","com.docker.compose.project":"kafka-single-node","com.docker.compose.service":"zookeeper","com.docker.compose.version":"1.22.0","io.confluent.docker":"true","io.confluent.docker.build.number":"3","io.confluent.docker.git.id":"9a5edfb","io.confluent.docker.git.repo":"confluentinc/kafka-images","maintainer":"partner-support@confluent.io"},"OnBuild":null,"OpenStdin":false,"StdinOnce":false,"Tty":false,"User":"","Volumes":{"/etc/zookeeper/secrets":{},"/var/lib/zookeeper/data":{},"/var/lib/zookeeper/log":{}},"WorkingDir":""},"Created":"2020-06-08T01:34:57.767752272Z","Driver":"aufs","ExecIDs":null,"GraphDriver":{"Data":null,"Name":"aufs"},"HostConfig":{"AutoRemove":false,"Binds":[],"BlkioDeviceReadBps":null,"BlkioDeviceReadIOps":null,"BlkioDeviceWriteBps":null,"BlkioDeviceWriteIOps":null,"BlkioWeight":0,"BlkioWeightDevice":null,"CapAdd":null,"CapDrop":null,"Cgroup":"","CgroupParent":"","CgroupnsMode":"","ConsoleSize":[0,0],"ContainerIDFile":"","CpuCount":0,"CpuPercent":0,"CpuPeriod":0,"CpuQuota":0,"CpuRealtimePeriod":0,"CpuRealtimeRuntime":0,"CpuShares":0,"CpusetCpus":"","CpusetMems":"","DeviceCgroupRules":null,"DeviceRequests":null,"Devices":null,"Dns":[],"DnsOptions":[],"DnsSearch":[],"ExtraHosts":null,"GroupAdd":null,"IOMaximumBandwidth":0,"IOMaximumIOps":0,"IpcMode":"shareable","Isolation":"","KernelMemory":0,"KernelMemoryTCP":0,"Links":null,"LogConfig":{"Config":{},"Type":"journald"},"MaskedPaths":["/proc/asound","/proc/acpi","/proc/kcore","/proc/keys","/proc/latency_stats","/proc/timer_list","/proc/timer_stats","/proc/sched_debug","/proc/scsi","/sys/firmware"],"Memory":0,"MemoryReservation":0,"MemorySwap":0,"MemorySwappiness":null,"NanoCpus":0,"NetworkMode":"kafka-single-node_default","OomKillDisable":false,"OomScoreAdj":0,"PidMode":"","PidsLimit":null,"PortBindings":{},"Privileged":false,"PublishAllPorts":false,"ReadonlyPaths":["/proc/bus","/proc/fs","/proc/irq","/proc/sys","/proc/sysrq-trigger"],"ReadonlyRootfs":false,"RestartPolicy":{"MaximumRetryCount":0,"Name":""},"Runtime":"runc","SecurityOpt":null,"ShmSize":67108864,"UTSMode":"","Ulimits":null,"UsernsMode":"","VolumeDriver":"","VolumesFrom":[]},"HostnamePath":"/var/lib/docker/containers/124403b9f8c91168f8ac5dc95794abcfa02e3cda83d490109b1b90c46fa7b718/hostname","HostsPath":"/var/lib/docker/containers/124403b9f8c91168f8ac5dc95794abcfa02e3cda83d490109b1b90c46fa7b718/hosts","Id":"124403b9f8c91168f8ac5dc95794abcfa02e3cda83d490109b1b90c46fa7b718","Image":"sha256:124ff6469e3d01eb72c58afa0668a5a19f7bf0318355e98847a4b4e28fcddbea","LogPath":"","MountLabel":"","Mounts":[{"Destination":"/etc/zookeeper/secrets","Driver":"local","Mode":"","Name":"532ecadc4032756b0c19d7bbe959220fa50d9f8e88b4acd68abfd1def23907bb","Propagation":"","RW":true,"Source":"/var/lib/docker/volumes/532ecadc4032756b0c19d7bbe959220fa50d9f8e88b4acd68abfd1def23907bb/_data","Type":"volume"},{"Destination":"/var/lib/zookeeper/data","Driver":"local","Mode":"","Name":"9e902e6c1edf9b8b0eb5c5abc7ccb0a6b1a0617dfcee375e2e150a7589edbe63","Propagation":"","RW":true,"Source":"/var/lib/docker/volumes/9e902e6c1edf9b8b0eb5c5abc7ccb0a6b1a0617dfcee375e2e150a7589edbe63/_data","Type":"volume"},{"Destination":"/var/lib/zookeeper/log","Driver":"local","Mode":"","Name":"59c042dc9cc47be579f6f69c303ab1bef9048dc47619eb8d4b79b1df604b28f1","Propagation":"","RW":true,"Source":"/var/lib/docker/volumes/59c042dc9cc47be579f6f69c303ab1bef9048dc47619eb8d4b79b1df604b28f1/_data","Type":"volume"}],"Name":"/kafka-single-node_zookeeper_1","NetworkSettings":{"Bridge":"","EndpointID":"","Gateway":"","GlobalIPv6Address":"","GlobalIPv6PrefixLen":0,"HairpinMode":false,"IPAddress":"","IPPrefixLen":0,"IPv6Gateway":"","LinkLocalIPv6Address":"","LinkLocalIPv6PrefixLen":0,"MacAddress":"","Networks":{"kafka-single-node_default":{"Aliases":["zookeeper","124403b9f8c9"],"DriverOpts":null,"EndpointID":"","Gateway":"","GlobalIPv6Address":"","GlobalIPv6PrefixLen":0,"IPAMConfig":null,"IPAddress":"","IPPrefixLen":0,"IPv6Gateway":"","Links":null,"MacAddress":"","NetworkID":"2f0899538ac85dcf98b46ddd30e241c36999e7b5b25ebe19b79066d214bd14f8"}},"Ports":{},"SandboxID":"ffdab23b3bb287542456d9cc7ece3d0662ea9a0f4b956bee7f94a0e7f26e51c1","SandboxKey":"/var/run/docker/netns/ffdab23b3bb2","SecondaryIPAddresses":null,"SecondaryIPv6Addresses":null},"Path":"/etc/confluent/docker/run","Platform":"linux","ProcessLabel":"","ResolvConfPath":"/var/lib/docker/containers/124403b9f8c91168f8ac5dc95794abcfa02e3cda83d490109b1b90c46fa7b718/resolv.conf","RestartCount":0,"State":{"Dead":false,"Error":"","ExitCode":143,"FinishedAt":"2020-06-09T07:27:55.135586596Z","OOMKilled":false,"Paused":false,"Pid":0,"Restarting":false,"Running":false,"StartedAt":"2020-06-08T01:34:58.170557665Z","Status":"exited"}}]
+
+JSON Indent
+[
+    {
+        "AppArmorProfile": "docker-default",
+        "Args": [],
+        "Config": {
+            "AttachStderr": false,
+            "AttachStdin": false,
+            "AttachStdout": false,
+            "Cmd": [
+                "/etc/confluent/docker/run"
+            ],
+            "Domainname": "",
+            "Entrypoint": null,
+            "Env": [
+                "ZOOKEEPER_CLIENT_PORT=2181",
+                "ZOOKEEPER_TICK_TIME=2000",
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "ALLOW_UNSIGNED=false",
+                "PYTHON_VERSION=2.7.9-1",
+                "PYTHON_PIP_VERSION=8.1.2",
+                "SCALA_VERSION=2.12",
+                "KAFKA_VERSION=",
+                "CONFLUENT_PLATFORM_LABEL=",
+                "CONFLUENT_VERSION=5.5.0",
+                "CONFLUENT_DEB_VERSION=1",
+                "ZULU_OPENJDK_VERSION=8=8.38.0.13",
+                "LANG=C.UTF-8",
+                "CUB_CLASSPATH=/etc/confluent/docker/docker-utils.jar",
+                "COMPONENT=zookeeper"
+            ],
+            "ExposedPorts": {
+                "2181/tcp": {},
+                "2888/tcp": {},
+                "3888/tcp": {}
+            },
+            "Hostname": "124403b9f8c9",
+            "Image": "confluentinc/cp-zookeeper:latest",
+            "Labels": {
+                "com.docker.compose.config-hash": "b6fa02ab96018cc522f057c093bf80ddefcb6e4e2077821b14cd0f6f1c2fd05b",
+                "com.docker.compose.container-number": "1",
+                "com.docker.compose.oneoff": "False",
+                "com.docker.compose.project": "kafka-single-node",
+                "com.docker.compose.service": "zookeeper",
+                "com.docker.compose.version": "1.22.0",
+                "io.confluent.docker": "true",
+                "io.confluent.docker.build.number": "3",
+                "io.confluent.docker.git.id": "9a5edfb",
+                "io.confluent.docker.git.repo": "confluentinc/kafka-images",
+                "maintainer": "partner-support@confluent.io"
+            },
+            "OnBuild": null,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Tty": false,
+            "User": "",
+            "Volumes": {
+                "/etc/zookeeper/secrets": {},
+                "/var/lib/zookeeper/data": {},
+                "/var/lib/zookeeper/log": {}
+            },
+            "WorkingDir": ""
+        },
+        "Created": "2020-06-08T01:34:57.767752272Z",
+        "Driver": "aufs",
+        "ExecIDs": null,
+        "GraphDriver": {
+            "Data": null,
+            "Name": "aufs"
+        },
+        "HostConfig": {
+            "AutoRemove": false,
+            "Binds": [],
+            "BlkioDeviceReadBps": null,
+            "BlkioDeviceReadIOps": null,
+            "BlkioDeviceWriteBps": null,
+            "BlkioDeviceWriteIOps": null,
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": null,
+            "CapAdd": null,
+            "CapDrop": null,
+            "Cgroup": "",
+            "CgroupParent": "",
+            "CgroupnsMode": "",
+            "ConsoleSize": [
+                0,
+                0
+            ],
+            "ContainerIDFile": "",
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpuShares": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "Devices": null,
+            "Dns": [],
+            "DnsOptions": [],
+            "DnsSearch": [],
+            "ExtraHosts": null,
+            "GroupAdd": null,
+            "IOMaximumBandwidth": 0,
+            "IOMaximumIOps": 0,
+            "IpcMode": "shareable",
+            "Isolation": "",
+            "KernelMemory": 0,
+            "KernelMemoryTCP": 0,
+            "Links": null,
+            "LogConfig": {
+                "Config": {},
+                "Type": "journald"
+            },
+            "MaskedPaths": [
+                "/proc/asound",
+                "/proc/acpi",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/sys/firmware"
+            ],
+            "Memory": 0,
+            "MemoryReservation": 0,
+            "MemorySwap": 0,
+            "MemorySwappiness": null,
+            "NanoCpus": 0,
+            "NetworkMode": "kafka-single-node_default",
+            "OomKillDisable": false,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "PidsLimit": null,
+            "PortBindings": {},
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ],
+            "ReadonlyRootfs": false,
+            "RestartPolicy": {
+                "MaximumRetryCount": 0,
+                "Name": ""
+            },
+            "Runtime": "runc",
+            "SecurityOpt": null,
+            "ShmSize": 67108864,
+            "UTSMode": "",
+            "Ulimits": null,
+            "UsernsMode": "",
+            "VolumeDriver": "",
+            "VolumesFrom": []
+        },
+        "HostnamePath": "/var/lib/docker/containers/124403b9f8c91168f8ac5dc95794abcfa02e3cda83d490109b1b90c46fa7b718/hostname",
+        "HostsPath": "/var/lib/docker/containers/124403b9f8c91168f8ac5dc95794abcfa02e3cda83d490109b1b90c46fa7b718/hosts",
+        "Id": "124403b9f8c91168f8ac5dc95794abcfa02e3cda83d490109b1b90c46fa7b718",
+        "Image": "sha256:124ff6469e3d01eb72c58afa0668a5a19f7bf0318355e98847a4b4e28fcddbea",
+        "LogPath": "",
+        "MountLabel": "",
+        "Mounts": [
+            {
+                "Destination": "/etc/zookeeper/secrets",
+                "Driver": "local",
+                "Mode": "",
+                "Name": "532ecadc4032756b0c19d7bbe959220fa50d9f8e88b4acd68abfd1def23907bb",
+                "Propagation": "",
+                "RW": true,
+                "Source": "/var/lib/docker/volumes/532ecadc4032756b0c19d7bbe959220fa50d9f8e88b4acd68abfd1def23907bb/_data",
+                "Type": "volume"
+            },
+            {
+                "Destination": "/var/lib/zookeeper/data",
+                "Driver": "local",
+                "Mode": "",
+                "Name": "9e902e6c1edf9b8b0eb5c5abc7ccb0a6b1a0617dfcee375e2e150a7589edbe63",
+                "Propagation": "",
+                "RW": true,
+                "Source": "/var/lib/docker/volumes/9e902e6c1edf9b8b0eb5c5abc7ccb0a6b1a0617dfcee375e2e150a7589edbe63/_data",
+                "Type": "volume"
+            },
+            {
+                "Destination": "/var/lib/zookeeper/log",
+                "Driver": "local",
+                "Mode": "",
+                "Name": "59c042dc9cc47be579f6f69c303ab1bef9048dc47619eb8d4b79b1df604b28f1",
+                "Propagation": "",
+                "RW": true,
+                "Source": "/var/lib/docker/volumes/59c042dc9cc47be579f6f69c303ab1bef9048dc47619eb8d4b79b1df604b28f1/_data",
+                "Type": "volume"
+            }
+        ],
+        "Name": "/kafka-single-node_zookeeper_1",
+        "NetworkSettings": {
+            "Bridge": "",
+            "EndpointID": "",
+            "Gateway": "",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "HairpinMode": false,
+            "IPAddress": "",
+            "IPPrefixLen": 0,
+            "IPv6Gateway": "",
+            "LinkLocalIPv6Address": "",
+            "LinkLocalIPv6PrefixLen": 0,
+            "MacAddress": "",
+            "Networks": {
+                "kafka-single-node_default": {
+                    "Aliases": [
+                        "zookeeper",
+                        "124403b9f8c9"
+                    ],
+                    "DriverOpts": null,
+                    "EndpointID": "",
+                    "Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "IPAMConfig": null,
+                    "IPAddress": "",
+                    "IPPrefixLen": 0,
+                    "IPv6Gateway": "",
+                    "Links": null,
+                    "MacAddress": "",
+                    "NetworkID": "2f0899538ac85dcf98b46ddd30e241c36999e7b5b25ebe19b79066d214bd14f8"
+                }
+            },
+            "Ports": {},
+            "SandboxID": "ffdab23b3bb287542456d9cc7ece3d0662ea9a0f4b956bee7f94a0e7f26e51c1",
+            "SandboxKey": "/var/run/docker/netns/ffdab23b3bb2",
+            "SecondaryIPAddresses": null,
+            "SecondaryIPv6Addresses": null
+        },
+        "Path": "/etc/confluent/docker/run",
+        "Platform": "linux",
+        "ProcessLabel": "",
+        "ResolvConfPath": "/var/lib/docker/containers/124403b9f8c91168f8ac5dc95794abcfa02e3cda83d490109b1b90c46fa7b718/resolv.conf",
+        "RestartCount": 0,
+        "State": {
+            "Dead": false,
+            "Error": "",
+            "ExitCode": 143,
+            "FinishedAt": "2020-06-09T07:27:55.135586596Z",
+            "OOMKilled": false,
+            "Paused": false,
+            "Pid": 0,
+            "Restarting": false,
+            "Running": false,
+            "StartedAt": "2020-06-08T01:34:58.170557665Z",
+            "Status": "exited"
+        }
+    }
+]
+
+YAML
+- AppArmorProfile: docker-default
+  Args: []
+  Config:
+    AttachStderr: false
+    AttachStdin: false
+    AttachStdout: false
+    Cmd:
+    - /etc/confluent/docker/run
+    Domainname: ""
+    Entrypoint: null
+    Env:
+    - ZOOKEEPER_CLIENT_PORT=2181
+    - ZOOKEEPER_TICK_TIME=2000
+    - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    - ALLOW_UNSIGNED=false
+    - PYTHON_VERSION=2.7.9-1
+    - PYTHON_PIP_VERSION=8.1.2
+    - SCALA_VERSION=2.12
+    - KAFKA_VERSION=
+    - CONFLUENT_PLATFORM_LABEL=
+    - CONFLUENT_VERSION=5.5.0
+    - CONFLUENT_DEB_VERSION=1
+    - ZULU_OPENJDK_VERSION=8=8.38.0.13
+    - LANG=C.UTF-8
+    - CUB_CLASSPATH=/etc/confluent/docker/docker-utils.jar
+    - COMPONENT=zookeeper
+    ExposedPorts:
+      2181/tcp: {}
+      2888/tcp: {}
+      3888/tcp: {}
+    Hostname: 124403b9f8c9
+    Image: confluentinc/cp-zookeeper:latest
+    Labels:
+      com.docker.compose.config-hash: b6fa02ab96018cc522f057c093bf80ddefcb6e4e2077821b14cd0f6f1c2fd05b
+      com.docker.compose.container-number: "1"
+      com.docker.compose.oneoff: "False"
+      com.docker.compose.project: kafka-single-node
+      com.docker.compose.service: zookeeper
+      com.docker.compose.version: 1.22.0
+      io.confluent.docker: "true"
+      io.confluent.docker.build.number: "3"
+      io.confluent.docker.git.id: 9a5edfb
+      io.confluent.docker.git.repo: confluentinc/kafka-images
+      maintainer: partner-support@confluent.io
+    OnBuild: null
+    OpenStdin: false
+    StdinOnce: false
+    Tty: false
+    User: ""
+    Volumes:
+      /etc/zookeeper/secrets: {}
+      /var/lib/zookeeper/data: {}
+      /var/lib/zookeeper/log: {}
+    WorkingDir: ""
+  Created: "2020-06-08T01:34:57.767752272Z"
+  Driver: aufs
+  ExecIDs: null
+  GraphDriver:
+    Data: null
+    Name: aufs
+  HostConfig:
+    AutoRemove: false
+    Binds: []
+    BlkioDeviceReadBps: null
+    BlkioDeviceReadIOps: null
+    BlkioDeviceWriteBps: null
+    BlkioDeviceWriteIOps: null
+    BlkioWeight: 0
+    BlkioWeightDevice: null
+    CapAdd: null
+    CapDrop: null
+    Cgroup: ""
+    CgroupParent: ""
+    CgroupnsMode: ""
+    ConsoleSize:
+    - 0
+    - 0
+    ContainerIDFile: ""
+    CpuCount: 0
+    CpuPercent: 0
+    CpuPeriod: 0
+    CpuQuota: 0
+    CpuRealtimePeriod: 0
+    CpuRealtimeRuntime: 0
+    CpuShares: 0
+    CpusetCpus: ""
+    CpusetMems: ""
+    DeviceCgroupRules: null
+    DeviceRequests: null
+    Devices: null
+    Dns: []
+    DnsOptions: []
+    DnsSearch: []
+    ExtraHosts: null
+    GroupAdd: null
+    IOMaximumBandwidth: 0
+    IOMaximumIOps: 0
+    IpcMode: shareable
+    Isolation: ""
+    KernelMemory: 0
+    KernelMemoryTCP: 0
+    Links: null
+    LogConfig:
+      Config: {}
+      Type: journald
+    MaskedPaths:
+    - /proc/asound
+    - /proc/acpi
+    - /proc/kcore
+    - /proc/keys
+    - /proc/latency_stats
+    - /proc/timer_list
+    - /proc/timer_stats
+    - /proc/sched_debug
+    - /proc/scsi
+    - /sys/firmware
+    Memory: 0
+    MemoryReservation: 0
+    MemorySwap: 0
+    MemorySwappiness: null
+    NanoCpus: 0
+    NetworkMode: kafka-single-node_default
+    OomKillDisable: false
+    OomScoreAdj: 0
+    PidMode: ""
+    PidsLimit: null
+    PortBindings: {}
+    Privileged: false
+    PublishAllPorts: false
+    ReadonlyPaths:
+    - /proc/bus
+    - /proc/fs
+    - /proc/irq
+    - /proc/sys
+    - /proc/sysrq-trigger
+    ReadonlyRootfs: false
+    RestartPolicy:
+      MaximumRetryCount: 0
+      Name: ""
+    Runtime: runc
+    SecurityOpt: null
+    ShmSize: 6.7108864e+07
+    UTSMode: ""
+    Ulimits: null
+    UsernsMode: ""
+    VolumeDriver: ""
+    VolumesFrom: []
+  HostnamePath: /var/lib/docker/containers/124403b9f8c91168f8ac5dc95794abcfa02e3cda83d490109b1b90c46fa7b718/hostname
+  HostsPath: /var/lib/docker/containers/124403b9f8c91168f8ac5dc95794abcfa02e3cda83d490109b1b90c46fa7b718/hosts
+  Id: 124403b9f8c91168f8ac5dc95794abcfa02e3cda83d490109b1b90c46fa7b718
+  Image: sha256:124ff6469e3d01eb72c58afa0668a5a19f7bf0318355e98847a4b4e28fcddbea
+  LogPath: ""
+  MountLabel: ""
+  Mounts:
+  - Destination: /etc/zookeeper/secrets
+    Driver: local
+    Mode: ""
+    Name: 532ecadc4032756b0c19d7bbe959220fa50d9f8e88b4acd68abfd1def23907bb
+    Propagation: ""
+    RW: true
+    Source: /var/lib/docker/volumes/532ecadc4032756b0c19d7bbe959220fa50d9f8e88b4acd68abfd1def23907bb/_data
+    Type: volume
+  - Destination: /var/lib/zookeeper/data
+    Driver: local
+    Mode: ""
+    Name: 9e902e6c1edf9b8b0eb5c5abc7ccb0a6b1a0617dfcee375e2e150a7589edbe63
+    Propagation: ""
+    RW: true
+    Source: /var/lib/docker/volumes/9e902e6c1edf9b8b0eb5c5abc7ccb0a6b1a0617dfcee375e2e150a7589edbe63/_data
+    Type: volume
+  - Destination: /var/lib/zookeeper/log
+    Driver: local
+    Mode: ""
+    Name: 59c042dc9cc47be579f6f69c303ab1bef9048dc47619eb8d4b79b1df604b28f1
+    Propagation: ""
+    RW: true
+    Source: /var/lib/docker/volumes/59c042dc9cc47be579f6f69c303ab1bef9048dc47619eb8d4b79b1df604b28f1/_data
+    Type: volume
+  Name: /kafka-single-node_zookeeper_1
+  NetworkSettings:
+    Bridge: ""
+    EndpointID: ""
+    Gateway: ""
+    GlobalIPv6Address: ""
+    GlobalIPv6PrefixLen: 0
+    HairpinMode: false
+    IPAddress: ""
+    IPPrefixLen: 0
+    IPv6Gateway: ""
+    LinkLocalIPv6Address: ""
+    LinkLocalIPv6PrefixLen: 0
+    MacAddress: ""
+    Networks:
+      kafka-single-node_default:
+        Aliases:
+        - zookeeper
+        - 124403b9f8c9
+        DriverOpts: null
+        EndpointID: ""
+        Gateway: ""
+        GlobalIPv6Address: ""
+        GlobalIPv6PrefixLen: 0
+        IPAMConfig: null
+        IPAddress: ""
+        IPPrefixLen: 0
+        IPv6Gateway: ""
+        Links: null
+        MacAddress: ""
+        NetworkID: 2f0899538ac85dcf98b46ddd30e241c36999e7b5b25ebe19b79066d214bd14f8
+    Ports: {}
+    SandboxID: ffdab23b3bb287542456d9cc7ece3d0662ea9a0f4b956bee7f94a0e7f26e51c1
+    SandboxKey: /var/run/docker/netns/ffdab23b3bb2
+    SecondaryIPAddresses: null
+    SecondaryIPv6Addresses: null
+  Path: /etc/confluent/docker/run
+  Platform: linux
+  ProcessLabel: ""
+  ResolvConfPath: /var/lib/docker/containers/124403b9f8c91168f8ac5dc95794abcfa02e3cda83d490109b1b90c46fa7b718/resolv.conf
+  RestartCount: 0
+  State:
+    Dead: false
+    Error: ""
+    ExitCode: 143
+    FinishedAt: "2020-06-09T07:27:55.135586596Z"
+    OOMKilled: false
+    Paused: false
+    Pid: 0
+    Restarting: false
+    Running: false
+    StartedAt: "2020-06-08T01:34:58.170557665Z"
+    Status: exited
+
+
+TOML
+AppArmorProfile = "docker-default"
+Args = []
+Created = "2020-06-08T01:34:57.767752272Z"
+Driver = "aufs"
+HostnamePath = "/var/lib/docker/containers/124403b9f8c91168f8ac5dc95794abcfa02e3cda83d490109b1b90c46fa7b718/hostname"
+HostsPath = "/var/lib/docker/containers/124403b9f8c91168f8ac5dc95794abcfa02e3cda83d490109b1b90c46fa7b718/hosts"
+Id = "124403b9f8c91168f8ac5dc95794abcfa02e3cda83d490109b1b90c46fa7b718"
+Image = "sha256:124ff6469e3d01eb72c58afa0668a5a19f7bf0318355e98847a4b4e28fcddbea"
+LogPath = ""
+MountLabel = ""
+Mounts = [{ Destination = "/etc/zookeeper/secrets", Driver = "local", Mode = "", Name = "532ecadc4032756b0c19d7bbe959220fa50d9f8e88b4acd68abfd1def23907bb", Propagation = "", RW = true, Source = "/var/lib/docker/volumes/532ecadc4032756b0c19d7bbe959220fa50d9f8e88b4acd68abfd1def23907bb/_data", Type = "volume" }, { Destination = "/var/lib/zookeeper/data", Driver = "local", Mode = "", Name = "9e902e6c1edf9b8b0eb5c5abc7ccb0a6b1a0617dfcee375e2e150a7589edbe63", Propagation = "", RW = true, Source = "/var/lib/docker/volumes/9e902e6c1edf9b8b0eb5c5abc7ccb0a6b1a0617dfcee375e2e150a7589edbe63/_data", Type = "volume" }, { Destination = "/var/lib/zookeeper/log", Driver = "local", Mode = "", Name = "59c042dc9cc47be579f6f69c303ab1bef9048dc47619eb8d4b79b1df604b28f1", Propagation = "", RW = true, Source = "/var/lib/docker/volumes/59c042dc9cc47be579f6f69c303ab1bef9048dc47619eb8d4b79b1df604b28f1/_data", Type = "volume" }]
+Name = "/kafka-single-node_zookeeper_1"
+Path = "/etc/confluent/docker/run"
+Platform = "linux"
+ProcessLabel = ""
+ResolvConfPath = "/var/lib/docker/containers/124403b9f8c91168f8ac5dc95794abcfa02e3cda83d490109b1b90c46fa7b718/resolv.conf"
+RestartCount = 0.0
+
+[Config]
+  AttachStderr = false
+  AttachStdin = false
+  AttachStdout = false
+  Cmd = ["/etc/confluent/docker/run"]
+  Domainname = ""
+  Env = ["ZOOKEEPER_CLIENT_PORT=2181", "ZOOKEEPER_TICK_TIME=2000", "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", "ALLOW_UNSIGNED=false", "PYTHON_VERSION=2.7.9-1", "PYTHON_PIP_VERSION=8.1.2", "SCALA_VERSION=2.12", "KAFKA_VERSION=", "CONFLUENT_PLATFORM_LABEL=", "CONFLUENT_VERSION=5.5.0", "CONFLUENT_DEB_VERSION=1", "ZULU_OPENJDK_VERSION=8=8.38.0.13", "LANG=C.UTF-8", "CUB_CLASSPATH=/etc/confluent/docker/docker-utils.jar", "COMPONENT=zookeeper"]
+  Hostname = "124403b9f8c9"
+  Image = "confluentinc/cp-zookeeper:latest"
+  OpenStdin = false
+  StdinOnce = false
+  Tty = false
+  User = ""
+  WorkingDir = ""
+
+  [Config.ExposedPorts]
+
+    [Config.ExposedPorts."2181/tcp"]
+
+    [Config.ExposedPorts."2888/tcp"]
+
+    [Config.ExposedPorts."3888/tcp"]
+
+  [Config.Labels]
+    "com.docker.compose.config-hash" = "b6fa02ab96018cc522f057c093bf80ddefcb6e4e2077821b14cd0f6f1c2fd05b"
+    "com.docker.compose.container-number" = "1"
+    "com.docker.compose.oneoff" = "False"
+    "com.docker.compose.project" = "kafka-single-node"
+    "com.docker.compose.service" = "zookeeper"
+    "com.docker.compose.version" = "1.22.0"
+    "io.confluent.docker" = "true"
+    "io.confluent.docker.build.number" = "3"
+    "io.confluent.docker.git.id" = "9a5edfb"
+    "io.confluent.docker.git.repo" = "confluentinc/kafka-images"
+    maintainer = "partner-support@confluent.io"
+
+  [Config.Volumes]
+
+    [Config.Volumes."/etc/zookeeper/secrets"]
+
+    [Config.Volumes."/var/lib/zookeeper/data"]
+
+    [Config.Volumes."/var/lib/zookeeper/log"]
+
+[GraphDriver]
+  Name = "aufs"
+
+[HostConfig]
+  AutoRemove = false
+  Binds = []
+  BlkioWeight = 0.0
+  Cgroup = ""
+  CgroupParent = ""
+  CgroupnsMode = ""
+  ConsoleSize = [0.0, 0.0]
+  ContainerIDFile = ""
+  CpuCount = 0.0
+  CpuPercent = 0.0
+  CpuPeriod = 0.0
+  CpuQuota = 0.0
+  CpuRealtimePeriod = 0.0
+  CpuRealtimeRuntime = 0.0
+  CpuShares = 0.0
+  CpusetCpus = ""
+  CpusetMems = ""
+  Dns = []
+  DnsOptions = []
+  DnsSearch = []
+  IOMaximumBandwidth = 0.0
+  IOMaximumIOps = 0.0
+  IpcMode = "shareable"
+  Isolation = ""
+  KernelMemory = 0.0
+  KernelMemoryTCP = 0.0
+  MaskedPaths = ["/proc/asound", "/proc/acpi", "/proc/kcore", "/proc/keys", "/proc/latency_stats", "/proc/timer_list", "/proc/timer_stats", "/proc/sched_debug", "/proc/scsi", "/sys/firmware"]
+  Memory = 0.0
+  MemoryReservation = 0.0
+  MemorySwap = 0.0
+  NanoCpus = 0.0
+  NetworkMode = "kafka-single-node_default"
+  OomKillDisable = false
+  OomScoreAdj = 0.0
+  PidMode = ""
+  Privileged = false
+  PublishAllPorts = false
+  ReadonlyPaths = ["/proc/bus", "/proc/fs", "/proc/irq", "/proc/sys", "/proc/sysrq-trigger"]
+  ReadonlyRootfs = false
+  Runtime = "runc"
+  ShmSize = 67108864.0
+  UTSMode = ""
+  UsernsMode = ""
+  VolumeDriver = ""
+  VolumesFrom = []
+
+  [HostConfig.LogConfig]
+    Type = "journald"
+
+    [HostConfig.LogConfig.Config]
+
+  [HostConfig.PortBindings]
+
+  [HostConfig.RestartPolicy]
+    MaximumRetryCount = 0.0
+    Name = ""
+
+[NetworkSettings]
+  Bridge = ""
+  EndpointID = ""
+  Gateway = ""
+  GlobalIPv6Address = ""
+  GlobalIPv6PrefixLen = 0.0
+  HairpinMode = false
+  IPAddress = ""
+  IPPrefixLen = 0.0
+  IPv6Gateway = ""
+  LinkLocalIPv6Address = ""
+  LinkLocalIPv6PrefixLen = 0.0
+  MacAddress = ""
+  SandboxID = "ffdab23b3bb287542456d9cc7ece3d0662ea9a0f4b956bee7f94a0e7f26e51c1"
+  SandboxKey = "/var/run/docker/netns/ffdab23b3bb2"
+
+  [NetworkSettings.Networks]
+
+    [NetworkSettings.Networks.kafka-single-node_default]
+      Aliases = ["zookeeper", "124403b9f8c9"]
+      EndpointID = ""
+      Gateway = ""
+      GlobalIPv6Address = ""
+      GlobalIPv6PrefixLen = 0.0
+      IPAddress = ""
+      IPPrefixLen = 0.0
+      IPv6Gateway = ""
+      MacAddress = ""
+      NetworkID = "2f0899538ac85dcf98b46ddd30e241c36999e7b5b25ebe19b79066d214bd14f8"
+
+  [NetworkSettings.Ports]
+
+[State]
+  Dead = false
+  Error = ""
+  ExitCode = 143.0
+  FinishedAt = "2020-06-09T07:27:55.135586596Z"
+  OOMKilled = false
+  Paused = false
+  Pid = 0.0
+  Restarting = false
+  Running = false
+  StartedAt = "2020-06-08T01:34:58.170557665Z"
+  Status = "exited"

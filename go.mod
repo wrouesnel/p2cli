@@ -10,7 +10,8 @@ require (
 	github.com/flosch/pongo2/v4 v4.0.2
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/kr/pretty v0.1.0 // indirect
+	github.com/pelletier/go-toml v1.9.3
 	github.com/wrouesnel/go.log v1.0.0
 	gopkg.in/check.v1 v1.0.0-20200902074654-038fdea0a05b
-	gopkg.in/yaml.v2 v2.2.2
+	gopkg.in/yaml.v2 v2.4.0
 )

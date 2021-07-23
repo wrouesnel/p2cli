@@ -139,6 +139,8 @@ func realMain() int {
 		DataFile     string
 		OutputFile   string
 
+		TarFile bool
+
 		CustomFilters     string
 		CustomFilterNoops bool
 
@@ -161,6 +163,8 @@ func realMain() int {
 	app.Flag("directory-mode", "Treat template path as directory-tree, output path as target directory").BoolVar(&options.DirectoryMode)
 	app.Flag("input", "Input data path. Leave blank for stdin.").Short('i').StringVar(&options.DataFile)
 	app.Flag("output", "Output file. Leave blank for stdout.").Short('o').StringVar(&options.OutputFile)
+
+	app.Flag("tar", "Output content as a tar file").BoolVar(&options.TarFile)
 
 	app.Flag("enable-filters", "Enable custom p2 filters.").StringVar(&options.CustomFilters)
 	app.Flag("enable-noop-filters", "Enable all custom filters in noop mode. Supercedes --enable-filters").BoolVar(&options.CustomFilterNoops)
@@ -213,6 +217,17 @@ func realMain() int {
 	pongo2.RegisterFilter("SetOwner", templating.FilterSetOwner)
 	pongo2.RegisterFilter("SetGroup", templating.FilterSetGroup)
 	pongo2.RegisterFilter("SetMode", templating.FilterSetMode)
+
+	// Standard suite of custom helpers
+	pongo2.RegisterFilter("Indent", templating.FilterIndent)
+	pongo2.RegisterFilter("indent", templating.FilterIndent)
+
+	pongo2.RegisterFilter("toJson", templating.FilterToJson)
+	pongo2.RegisterFilter("toYaml", templating.FilterToYaml)
+	pongo2.RegisterFilter("toToml", templating.FilterToToml)
+
+	pongo2.RegisterFilter("toBase64", templating.FilterToBase64)
+	pongo2.RegisterFilter("fromBase64", templating.FilterFromBase64)
 
 	// Determine mode of operations
 	var fileFormat SupportedType
