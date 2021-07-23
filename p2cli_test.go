@@ -127,6 +127,47 @@ func (s *p2Integration) TestDebugCommandLineOptionsWork(c *C) {
 	}
 }
 
+func (s *p2Integration) TestIndentFilter(c *C) {
+	{
+		const templateFile string = "tests/data.indent.p2"
+		const emptyData string = "tests/data.indent.json"
+
+		// This test uses the write_file filter to produce its output.
+		outputFile := fmt.Sprintf("tests/data.indent.test")
+		const expectedFile string = "tests/data.indent.out"
+		os.Args = []string{"p2", "-t", templateFile, "-i", emptyData, "-o", outputFile}
+		exit := realMain()
+		c.Assert(exit, Equals, 0, Commentf("Exit code for input %s != 0", emptyData))
+		c.Check(string(MustReadFile(outputFile)), DeepEquals, string(MustReadFile(expectedFile)))
+	}
+}
+
+func (s *p2Integration) TestStructuredFilters(c *C) {
+	const templateFile string = "tests/data.structured.p2"
+	const emptyData string = "tests/data.structured.json"
+
+	// This test uses the write_file filter to produce its output.
+	outputFile := fmt.Sprintf("tests/data.structured.test")
+	const expectedFile string = "tests/data.structured.out"
+	os.Args = []string{"p2", "-t", templateFile, "-i", emptyData, "-o", outputFile}
+	exit := realMain()
+	c.Assert(exit, Equals, 0, Commentf("Exit code for input %s != 0", emptyData))
+	c.Check(string(MustReadFile(outputFile)), DeepEquals, string(MustReadFile(expectedFile)))
+}
+
+func (s *p2Integration) TestBase64Filters(c *C) {
+	const templateFile string = "tests/data.base64.p2"
+	const emptyData string = "tests/data.base64.json"
+
+	// This test uses the write_file filter to produce its output.
+	outputFile := fmt.Sprintf("tests/data.base64.test")
+	const expectedFile string = "tests/data.base64.out"
+	os.Args = []string{"p2", "-t", templateFile, "-i", emptyData, "-o", outputFile}
+	exit := realMain()
+	c.Assert(exit, Equals, 0, Commentf("Exit code for input %s != 0", emptyData))
+	c.Check(string(MustReadFile(outputFile)), DeepEquals, string(MustReadFile(expectedFile)))
+}
+
 func (s *p2Integration) TestCustomFilters(c *C) {
 	{
 		const templateFile string = "tests/data.write_file.p2"
