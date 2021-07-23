@@ -219,15 +219,20 @@ func realMain() int {
 	pongo2.RegisterFilter("SetMode", templating.FilterSetMode)
 
 	// Standard suite of custom helpers
-	pongo2.RegisterFilter("Indent", templating.FilterIndent)
 	pongo2.RegisterFilter("indent", templating.FilterIndent)
 
-	pongo2.RegisterFilter("toJson", templating.FilterToJson)
-	pongo2.RegisterFilter("toYaml", templating.FilterToYaml)
-	pongo2.RegisterFilter("toToml", templating.FilterToToml)
+	pongo2.RegisterFilter("to_json", templating.FilterToJson)
+	pongo2.RegisterFilter("to_yaml", templating.FilterToYaml)
+	pongo2.RegisterFilter("to_toml", templating.FilterToToml)
 
-	pongo2.RegisterFilter("toBase64", templating.FilterToBase64)
-	pongo2.RegisterFilter("fromBase64", templating.FilterFromBase64)
+	pongo2.RegisterFilter("to_base64", templating.FilterToBase64)
+	pongo2.RegisterFilter("from_base64", templating.FilterFromBase64)
+
+	pongo2.RegisterFilter("string", templating.FilterString)
+	pongo2.RegisterFilter("bytes", templating.FilterBytes)
+
+	pongo2.RegisterFilter("to_gzip", templating.FilterToGzip)
+	pongo2.RegisterFilter("from_gzip", templating.FilterFromGzip)
 
 	// Determine mode of operations
 	var fileFormat SupportedType

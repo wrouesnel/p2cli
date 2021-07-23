@@ -1,11 +1,11 @@
 JSON
-{{complex_value|toJson}}
+{{complex_value|to_json}}
 
 JSON Indent
-{{complex_value|toJson:true}}
+{{complex_value|to_json:true}}
 
 YAML
-{{complex_value|toYaml}}
+{{complex_value|to_yaml}}
 
 TOML
-{{complex_value|first|toToml}}
+{{complex_value|first|to_toml}}

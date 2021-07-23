@@ -1,5 +1,5 @@
-toBase64
-{{decoded|toBase64}}
+to_base64
+{{decoded|to_base64}}
 
-fromBase64
-{{encoded|fromBase64}}
+from_base64
+{{encoded|from_base64|string}}

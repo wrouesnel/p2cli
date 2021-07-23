@@ -168,6 +168,32 @@ func (s *p2Integration) TestBase64Filters(c *C) {
 	c.Check(string(MustReadFile(outputFile)), DeepEquals, string(MustReadFile(expectedFile)))
 }
 
+func (s *p2Integration) TestStringFilters(c *C) {
+	const templateFile string = "tests/data.string_filters.p2"
+	const emptyData string = "tests/data.string_filters.json"
+
+	// This test uses the write_file filter to produce its output.
+	outputFile := fmt.Sprintf("tests/data.string_filters.test")
+	const expectedFile string = "tests/data.string_filters.out"
+	os.Args = []string{"p2", "-t", templateFile, "-i", emptyData, "-o", outputFile}
+	exit := realMain()
+	c.Assert(exit, Equals, 0, Commentf("Exit code for input %s != 0", emptyData))
+	c.Check(string(MustReadFile(outputFile)), DeepEquals, string(MustReadFile(expectedFile)))
+}
+
+func (s *p2Integration) TestGzipFilters(c *C) {
+	const templateFile string = "tests/data.gzip.p2"
+	const emptyData string = "tests/data.gzip.json"
+
+	// This test uses the write_file filter to produce its output.
+	outputFile := fmt.Sprintf("tests/data.gzip.test")
+	const expectedFile string = "tests/data.gzip.out"
+	os.Args = []string{"p2", "-t", templateFile, "-i", emptyData, "-o", outputFile}
+	exit := realMain()
+	c.Assert(exit, Equals, 0, Commentf("Exit code for input %s != 0", emptyData))
+	c.Check(string(MustReadFile(outputFile)), DeepEquals, string(MustReadFile(expectedFile)))
+}
+
 func (s *p2Integration) TestCustomFilters(c *C) {
 	{
 		const templateFile string = "tests/data.write_file.p2"

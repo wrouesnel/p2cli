@@ -45,11 +45,15 @@ cat someYaml | p2 -t template.j2 -f yaml
 #### Extra Built-In Filters
 
 * `indent` - output data with the given indent. Can be given either a string or number of spaces.
-* `toJson` - outputs structured data as JSON. Supplying a parameter sets the indent.
-* `toYaml` - outputs structured data as YAML.
-* `toToml` - outputs structured data as TOML. Must be supplied a map.
-* `toBase64` - encode a string to base64
-* `fromBase64` - decode a string from base64 to a string
+* `to_json` - outputs structured data as JSON. Supplying a parameter sets the indent.
+* `to_yaml` - outputs structured data as YAML.
+* `to_toml` - outputs structured data as TOML. Must be supplied a map.
+* `string` - convert input data to string (use with `from_base64`)
+* `bytes` - convert input data to bytes
+* `to_base64` - encode a string or bytes to base64
+* `from_base64` - decode a string from base64 to bytes
+* `to_gzip` - compress bytes with gzip (supply level as parameter, default 9)
+* `from_gzip` - decompress bytes with gzip
 
 #### Special Output Functions
 

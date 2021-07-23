@@ -1,0 +1,5 @@
+string
+{{ s | string | bytes | string }}
+
+bytes
+{{ s | bytes | string | bytes | string }}

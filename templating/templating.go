@@ -1,6 +1,8 @@
 package templating
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -10,6 +12,7 @@ import (
 	log "github.com/wrouesnel/go.log"
 	"gopkg.in/yaml.v2"
 	"io"
+	"io/ioutil"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -231,16 +234,22 @@ func FilterToToml(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2
 }
 
 func FilterToBase64(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
-	if !in.IsString() {
+	if in.IsString() {
+		// encode string
+		return pongo2.AsValue(base64.StdEncoding.EncodeToString([]byte(in.String()))), nil
+	}
+
+	intf := in.Interface()
+	b, ok := intf.([]byte)
+	if !ok {
 		return nil, &pongo2.Error{
-			Sender:    "filter:ToBase64",
-			OrigError: errors.New("Filter input must be of type 'string'."),
+			Sender:    "filter:toBase64",
+			OrigError: fmt.Errorf("filter requires a []byte or string input"),
 		}
 	}
 
-	output := base64.StdEncoding.EncodeToString([]byte(in.String()))
-
-	return pongo2.AsValue(output), nil
+	// encode bytes
+	return pongo2.AsValue(base64.StdEncoding.EncodeToString(b)), nil
 }
 
 func FilterFromBase64(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
@@ -259,7 +268,116 @@ func FilterFromBase64(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *po
 		}
 	}
 
-	return pongo2.AsValue(string(output)), nil
+	// decode as bytes
+	return pongo2.AsValue(output), nil
+}
+
+func FilterString(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+	if in.IsString() {
+		return pongo2.AsValue(in.String()), nil
+	}
+
+	intf := in.Interface()
+
+	b, ok := intf.([]byte)
+	if !ok {
+		return nil, &pongo2.Error{
+			Sender:    "filter:string",
+			OrigError: fmt.Errorf("filter requires a []byte or string input"),
+		}
+	}
+	return pongo2.AsValue(string(b)), nil
+}
+
+func FilterBytes(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+	if in.IsString() {
+		return pongo2.AsValue([]byte(in.String())), nil
+	}
+
+	intf := in.Interface()
+	b, ok := intf.([]byte)
+
+	if !ok {
+		return nil, &pongo2.Error{
+			Sender:    "filter:string",
+			OrigError: fmt.Errorf("filter requires a []byte or string input"),
+		}
+	}
+
+	return pongo2.AsValue(b), nil
+}
+
+func FilterToGzip(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+	level := 9
+	if param.IsInteger() {
+		level = param.Integer()
+	}
+
+	intf := in.Interface()
+	b, ok := intf.([]byte)
+
+	if !ok {
+		return nil, &pongo2.Error{
+			Sender:    "filter:to_gzip",
+			OrigError: fmt.Errorf("filter requires a []byte input"),
+		}
+	}
+
+	buf := bytes.NewBuffer(nil)
+	wr, err := gzip.NewWriterLevel(buf, level)
+	if err != nil {
+		return nil, &pongo2.Error{
+			Sender:    "filter:to_gzip",
+			OrigError: err,
+		}
+	}
+
+	if _, err := wr.Write(b); err != nil {
+		return nil, &pongo2.Error{
+			Sender:    "filter:to_gzip",
+			OrigError: err,
+		}
+	}
+
+	err = wr.Close()
+	if err != nil {
+		return nil, &pongo2.Error{
+			Sender:    "filter:to_gzip",
+			OrigError: err,
+		}
+	}
+
+	return pongo2.AsValue(buf.Bytes()), nil
+}
+
+func FilterFromGzip(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+	intf := in.Interface()
+	b, ok := intf.([]byte)
+
+	if !ok {
+		return nil, &pongo2.Error{
+			Sender:    "filter:from_gzip",
+			OrigError: fmt.Errorf("filter requires a []byte input"),
+		}
+	}
+
+	rd, err := gzip.NewReader(bytes.NewReader(b))
+	if err != nil {
+		return nil, &pongo2.Error{
+			Sender:    "filter:from_gzip",
+			OrigError: err,
+		}
+	}
+
+	output, err := ioutil.ReadAll(rd)
+	if err != nil {
+		return nil, &pongo2.Error{
+			Sender:    "filter:from_gzip",
+			OrigError: err,
+		}
+	}
+
+	return pongo2.AsValue(output), nil
 }
 
 func ExecuteTemplate(tmpl *pongo2.Template, inputData pongo2.Context, outputPath string, rootDir string) error {
