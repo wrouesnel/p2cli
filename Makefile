@@ -1,13 +1,18 @@
 
 GO_SRC := $(shell find . -type f -name '*.go' ! -path '*/vendor/*')
 VERSION ?= $(shell git describe --long --dirty)
+GOARCH = amd64
+LDFLAGS = -ldflags "-extldflags '-static' -X main.Version=${VERSION}"
 
 all: vet test p2
 
-p2: $(GO_SRC)
-	CGO_ENABLED=0 GOOS=linux go build -a \
-	-ldflags "-extldflags '-static' -X main.Version=$(shell git describe --long --dirty)" \
-	-o p2 .
+p2: linux darwin
+
+linux: $(GO_SRC)
+	CGO_ENABLED=0 GOOS=linux go build -a ${LDFLAGS}	-o p2-linux-${GOARCH} .
+
+darwin: $(GO_SRC)
+	CGO_ENABLED=0 GOOS=darwin go build -a ${LDFLAGS} -o p2-darwin-${GOARCH} .
 
 vet:
 	go vet
