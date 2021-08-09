@@ -1,5 +1,5 @@
 
-GO_SRC := $(shell find -type f -name '*.go' ! -path '*/vendor/*')
+GO_SRC := $(shell find . -type f -name '*.go' ! -path '*/vendor/*')
 VERSION ?= $(shell git describe --long --dirty)
 
 all: vet test p2
