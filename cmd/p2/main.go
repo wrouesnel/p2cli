@@ -15,7 +15,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/alecthomas/kingpin"
-	"github.com/wrouesnel/p2cli/templating"
+	"github.com/wrouesnel/p2cli/pkg/templating"
 	"io/ioutil"
 	"os"
 	"path"

@@ -58,4 +58,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: p2
+          files: |
+            p2.linux.x86_64
+            p2.win32
+
