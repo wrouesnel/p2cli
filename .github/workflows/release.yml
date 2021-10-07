@@ -48,10 +48,6 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
 
-      - name: Build
-        run:
-          make p2
-
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/r')
@@ -59,6 +55,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: |
-            p2.linux.x86_64
-            p2.win32
-
+            p2-linux-arm64
+            p2-linux-x86_64
+            p2-linux-i386
+            p2-windows-i386.exe
+            p2-windows-x86_64.exe
+            p2-darwin-x86_64
+            p2-darwin-i386
+            p2-darwin-arm64
+            p2-freebsd-x86_64

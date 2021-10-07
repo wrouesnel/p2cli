@@ -1,4 +1,5 @@
 /p2
+/p2-*
 /tests/*.test
 *.orig
 /cover.out
