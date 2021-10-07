@@ -48,9 +48,9 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
 
-      - name: Build
+      - name: Build Release
         run:
-          make all
+          make release
 
       - name: Release
         uses: softprops/action-gh-release@v1
