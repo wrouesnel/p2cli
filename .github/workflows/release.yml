@@ -48,6 +48,10 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
 
+      - name: Build
+        run:
+          make all
+
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/r')
