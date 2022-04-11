@@ -62,7 +62,7 @@ func (s *p2Integration) TestInputDataProducesIdenticalOutput(c *C) {
 
 		// Check reading and writing to a file works across data types
 		os.Args = []string{"p2", "-i", td, "-t", templateFile, "-o", fileTofileOutput}
-		exit = realMain()
+		exit = realMain(os.Environ())
 		c.Check(exit, Equals, 0)
 		c.Check(MustReadFile(fileTofileOutput), DeepEquals, expectedOutput)
 
@@ -70,7 +70,7 @@ func (s *p2Integration) TestInputDataProducesIdenticalOutput(c *C) {
 		stdinToFileOutput := fmt.Sprintf("%s.2.test", td)
 		os.Stdin = MustOpenFile(td)
 		os.Args = []string{"p2", "-t", templateFile, "-o", stdinToFileOutput}
-		exit = realMain()
+		exit = realMain(os.Environ())
 		c.Check(exit, Equals, 0)
 		c.Check(MustReadFile(stdinToFileOutput), DeepEquals, expectedOutput)
 
@@ -83,7 +83,7 @@ func (s *p2Integration) TestInputDataProducesIdenticalOutput(c *C) {
 			panic(err)
 		}
 		os.Args = []string{"p2", "-f", strings.Split(td, ".")[1], "-t", templateFile}
-		exit = realMain()
+		exit = realMain(os.Environ())
 		c.Check(exit, Equals, 0)
 		c.Check(MustReadFile(stdinToStdoutOutput), DeepEquals, expectedOutput)
 
@@ -93,7 +93,7 @@ func (s *p2Integration) TestInputDataProducesIdenticalOutput(c *C) {
 		os.Args = []string{"p2", "-f", strings.Split(td, ".")[1], "-t", templateFile, "--use-env-key", "-i", EnvKey, "-o", envkeyOutput}
 		// Dump the data into an environment key
 		os.Setenv(EnvKey, string(MustReadFile(td)))
-		exit = realMain()
+		exit = realMain(os.Environ())
 		c.Check(exit, Equals, 0)
 		c.Check(MustReadFile(envkeyOutput), DeepEquals, expectedOutput)
 	}
@@ -104,8 +104,68 @@ func (s *p2Integration) TestInputDataProducesIdenticalOutput(c *C) {
 
 func (s *p2Integration) TestOnNoTemplateExitFail(c *C) {
 	os.Args = []string{"p2", "--template=\"\""}
-	exit := realMain()
+	exit := realMain(os.Environ())
 	c.Check(exit, Not(Equals), 0, Commentf("Exit code for command line: %v", os.Args))
+}
+
+func (s *p2Integration) TestIncludingEnvironmentVariablsOverridesDataVariables(c *C) {
+	// Store the original origStdin
+	var origStdin, origStdout *os.File
+	origStdin = os.Stdin
+	origStdout = os.Stdout
+
+	env := os.Environ()
+	env = append(env, "simple_value1=InTheEnvironment")
+
+	// Template files
+	const templateFile string = "tests/data.p2"
+	expectedOutput := MustReadFile("tests/data.out.overridden")
+
+	type tData struct {
+		InputFile          string // Test input file
+		ExpectedOutputFile string // Expected output file
+	}
+
+	testDatas := []string{
+		"tests/data.env",
+		"tests/data.json",
+		"tests/data.yml",
+	}
+
+	for _, td := range testDatas {
+		var exit int
+		fileTofileOutput := fmt.Sprintf("%s.1.test", td)
+
+		// Check reading and writing to a file works across data types
+		os.Args = []string{"p2", "-i", td, "-t", templateFile, "-o", fileTofileOutput}
+		exit = realMain(env)
+		c.Check(exit, Equals, 0)
+		c.Check(string(MustReadFile(fileTofileOutput)), Equals, string(expectedOutput))
+
+		// Check stdin to file works across data types
+		stdinToFileOutput := fmt.Sprintf("%s.2.test", td)
+		os.Stdin = MustOpenFile(td)
+		os.Args = []string{"p2", "-t", templateFile, "-o", stdinToFileOutput}
+		exit = realMain(env)
+		c.Check(exit, Equals, 0)
+		c.Check(string(MustReadFile(stdinToFileOutput)), Equals, string(expectedOutput))
+
+		// Check stdin to stdout works internally
+		stdinToStdoutOutput := fmt.Sprintf("%s.3.test", td)
+		os.Stdin = MustOpenFile(td)
+		var err error
+		os.Stdout, err = os.OpenFile(stdinToStdoutOutput, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.FileMode(0777))
+		if err != nil {
+			panic(err)
+		}
+		os.Args = []string{"p2", "-f", strings.Split(td, ".")[1], "-t", templateFile}
+		exit = realMain(env)
+		c.Check(exit, Equals, 0)
+		c.Check(string(MustReadFile(stdinToStdoutOutput)), Equals, string(expectedOutput))
+	}
+
+	os.Stdin = origStdin
+	os.Stdout = origStdout
 }
 
 // TestDebugCommandLineOptionsWork exercises the non-critical path command ine
@@ -122,7 +182,7 @@ func (s *p2Integration) TestDebugCommandLineOptionsWork(c *C) {
 	// Test dump input data
 	for _, td := range testDatas {
 		os.Args = []string{"p2", "-t", templateFile, "-i", td, "--debug"}
-		exit := realMain()
+		exit := realMain(os.Environ())
 		c.Check(exit, Equals, 0, Commentf("Exit code for input %s != 0", td))
 	}
 }
@@ -136,7 +196,7 @@ func (s *p2Integration) TestIndentFilter(c *C) {
 		outputFile := fmt.Sprintf("tests/data.indent.test")
 		const expectedFile string = "tests/data.indent.out"
 		os.Args = []string{"p2", "-t", templateFile, "-i", emptyData, "-o", outputFile}
-		exit := realMain()
+		exit := realMain(os.Environ())
 		c.Assert(exit, Equals, 0, Commentf("Exit code for input %s != 0", emptyData))
 		c.Check(string(MustReadFile(outputFile)), DeepEquals, string(MustReadFile(expectedFile)))
 	}
@@ -150,7 +210,7 @@ func (s *p2Integration) TestStructuredFilters(c *C) {
 	outputFile := fmt.Sprintf("tests/data.structured.test")
 	const expectedFile string = "tests/data.structured.out"
 	os.Args = []string{"p2", "-t", templateFile, "-i", emptyData, "-o", outputFile}
-	exit := realMain()
+	exit := realMain(os.Environ())
 	c.Assert(exit, Equals, 0, Commentf("Exit code for input %s != 0", emptyData))
 	c.Check(string(MustReadFile(outputFile)), DeepEquals, string(MustReadFile(expectedFile)))
 }
@@ -163,7 +223,7 @@ func (s *p2Integration) TestBase64Filters(c *C) {
 	outputFile := fmt.Sprintf("tests/data.base64.test")
 	const expectedFile string = "tests/data.base64.out"
 	os.Args = []string{"p2", "-t", templateFile, "-i", emptyData, "-o", outputFile}
-	exit := realMain()
+	exit := realMain(os.Environ())
 	c.Assert(exit, Equals, 0, Commentf("Exit code for input %s != 0", emptyData))
 	c.Check(string(MustReadFile(outputFile)), DeepEquals, string(MustReadFile(expectedFile)))
 }
@@ -176,7 +236,7 @@ func (s *p2Integration) TestStringFilters(c *C) {
 	outputFile := fmt.Sprintf("tests/data.string_filters.test")
 	const expectedFile string = "tests/data.string_filters.out"
 	os.Args = []string{"p2", "-t", templateFile, "-i", emptyData, "-o", outputFile}
-	exit := realMain()
+	exit := realMain(os.Environ())
 	c.Assert(exit, Equals, 0, Commentf("Exit code for input %s != 0", emptyData))
 	c.Check(string(MustReadFile(outputFile)), DeepEquals, string(MustReadFile(expectedFile)))
 }
@@ -189,7 +249,7 @@ func (s *p2Integration) TestGzipFilters(c *C) {
 	outputFile := fmt.Sprintf("tests/data.gzip.test")
 	const expectedFile string = "tests/data.gzip.out"
 	os.Args = []string{"p2", "-t", templateFile, "-i", emptyData, "-o", outputFile}
-	exit := realMain()
+	exit := realMain(os.Environ())
 	c.Assert(exit, Equals, 0, Commentf("Exit code for input %s != 0", emptyData))
 	c.Check(string(MustReadFile(outputFile)), DeepEquals, string(MustReadFile(expectedFile)))
 }
@@ -203,7 +263,7 @@ func (s *p2Integration) TestCustomFilters(c *C) {
 		outputFile := fmt.Sprintf("tests/data.write_file.test")
 		const expectedFile string = "tests/data.write_file.out"
 		os.Args = []string{"p2", "-t", templateFile, "-i", emptyData, "--enable-filters=write_file"}
-		exit := realMain()
+		exit := realMain(os.Environ())
 		c.Assert(exit, Equals, 0, Commentf("Exit code for input %s != 0", emptyData))
 		c.Check(string(MustReadFile(outputFile)), DeepEquals, string(MustReadFile(expectedFile)))
 	}
@@ -217,7 +277,7 @@ func (s *p2Integration) TestCustomFilters(c *C) {
 		outputFile := fmt.Sprintf("tests/data.make_dirs.test")
 		const expectedFile string = "tests/data.make_dirs.out"
 		os.Args = []string{"p2", "-t", templateFile, "-i", emptyData, "--enable-filters=make_dirs"}
-		exit := realMain()
+		exit := realMain(os.Environ())
 		c.Assert(exit, Equals, 0, Commentf("Exit code for input %s != 0", emptyData))
 		c.Check(string(MustReadFile(outputFile)), DeepEquals, string(MustReadFile(expectedFile)))
 
@@ -234,7 +294,7 @@ func (s *p2Integration) TestDirectoryMode(c *C) {
 	os.Args = []string{"p2", "--directory-mode", "-t", "tests/directory-mode/templates",
 		"-o", "tests/directory-mode/output"}
 
-	exit := realMain()
+	exit := realMain(os.Environ())
 	c.Assert(exit, Equals, 0, Commentf("Exit code for dirextory mode != 0"))
 }
 
@@ -244,7 +304,7 @@ func (s *p2Integration) TestInvalidEnvironmentVariables(c *C) {
 	// Check that invalid OS identifiers are filtered out.
 	os.Setenv("BASH_FUNC_x%%", "somevalue")
 	os.Args = []string{"p2", "-t", "tests/data.p2", "-o", "data.invalid.env"}
-	exit := realMain()
+	exit := realMain(os.Environ())
 	c.Check(exit, Equals, 0)
 	c.Assert(exit, Equals, 0, Commentf("Exit code with invalid data in environment != 0"))
 	os.Unsetenv("BASH_FUNC_x%%")
