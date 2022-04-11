@@ -126,15 +126,18 @@ func readRawInput(name string, source DataSource) ([]byte, error) {
 }
 
 func main() {
-	os.Exit(realMain())
+	os.Exit(realMain(os.Environ()))
 }
 
-func realMain() int {
+// realMain implements the actual functionality of the program so it can be called inline from testing.
+// env is normally passed the environment variable array.
+func realMain(env []string) int {
 	options := struct {
 		DumpInputData bool
 
 		Format       string
 		UseEnvKey    bool
+		IncludeEnv   bool
 		TemplateFile string
 		DataFile     string
 		OutputFile   string
@@ -155,9 +158,11 @@ func realMain() int {
 	app.Version(Version)
 
 	app.Flag("debug", "Print Go serialization to stderr and then exit").Short('d').BoolVar(&options.DumpInputData)
-	app.Flag("format", "Input data format").Default("").Short('f').EnumVar(&options.Format, "", "env", "envkey", "json", "yml", "yaml")
+	app.Flag("format", "Input data format (may specify multiple values)").Default("").Short('f').
+		EnumVar(&options.Format, "", "env", "envkey", "json", "yml", "yaml")
 
 	app.Flag("use-env-key", "Treat --input as an environment key name to read.").BoolVar(&options.UseEnvKey)
+	app.Flag("include-env", "Implicitly include environment variables in addition to any supplied data").BoolVar(&options.IncludeEnv)
 
 	app.Flag("template", "Template file to process").Short('t').Required().StringVar(&options.TemplateFile)
 	app.Flag("directory-mode", "Treat template path as directory-tree, output path as target directory").BoolVar(&options.DirectoryMode)
@@ -276,6 +281,9 @@ func realMain() int {
 	// Get the input context
 	switch fileFormat {
 	case TypeEnv:
+		if options.IncludeEnv {
+			log.Warnln("--include-env has no effect when data source is already the environment")
+		}
 		err = func(inputData map[string]interface{}) error {
 			if inputSource != SourceEnv {
 				rawInput, err := readRawInput(options.DataFile, inputSource)
@@ -314,21 +322,8 @@ func realMain() int {
 					inputData[splitKeyVal[0]] = values[0]
 				}
 			} else {
-				for _, keyval := range os.Environ() {
-					splitKeyVal := strings.SplitN(keyval, "=", 2)
-					if len(splitKeyVal) != 2 {
-						return error(ErrorEnvironmentVariables{
-							Reason:    "Could not find an equals value to split on",
-							RawEnvVar: keyval,
-						})
-					}
-
-					// os.Environ consumption has special-case logic. Since there's all sorts of things
-					// which can end up in the environment, we want to filter here only for keys which we
-					// like.
-					if reIdentifiers.MatchString(splitKeyVal[0]) {
-						inputData[splitKeyVal[0]] = splitKeyVal[1]
-					}
+				if err := fromEnvironment(inputData); err != nil {
+					return err
 				}
 			}
 			return nil
@@ -350,6 +345,14 @@ func realMain() int {
 	default:
 		log.Errorln("Unknown input format.")
 		return 1
+	}
+
+	if options.IncludeEnv {
+		log.Infoln("Including environment variables")
+		if err := fromEnvironment(inputData); err != nil {
+			log.Errorln("Error while including environment variables", err)
+			return 1
+		}
 	}
 
 	if err != nil {
