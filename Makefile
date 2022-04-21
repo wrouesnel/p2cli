@@ -28,27 +28,27 @@ p2-linux-i386:
     	-o $@ ./cmd/p2
 
 p2-windows-i386.exe:
-	CGO_ENABLED=0 GOOS=linux GOARCH=386 go build -a \
+	CGO_ENABLED=0 GOOS=windows GOARCH=386 go build -a \
     	-ldflags "-extldflags '-static' -X main.Version=$(shell git describe --long --dirty)" \
     	-o $@ ./cmd/p2
 
 p2-windows-x86_64.exe:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a \
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -a \
     	-ldflags "-extldflags '-static' -X main.Version=$(shell git describe --long --dirty)" \
     	-o $@ ./cmd/p2
 
 p2-darwin-x86_64:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a \
+	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -a \
     	-ldflags "-extldflags '-static' -X main.Version=$(shell git describe --long --dirty)" \
     	-o $@ ./cmd/p2
 
 p2-darwin-i386:
-	CGO_ENABLED=0 GOOS=linux GOARCH=386 go build -a \
+	CGO_ENABLED=0 GOOS=darwin GOARCH=386 go build -a \
     	-ldflags "-extldflags '-static' -X main.Version=$(shell git describe --long --dirty)" \
     	-o $@ ./cmd/p2
 
 p2-darwin-arm64:
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a \
+	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -a \
     	-ldflags "-extldflags '-static' -X main.Version=$(shell git describe --long --dirty)" \
     	-o $@ ./cmd/p2
 
