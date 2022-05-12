@@ -48,7 +48,7 @@ p2-darwin-arm64:
     	-o $@ ./cmd/p2
 
 p2-freebsd-x86_64:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a \
+	CGO_ENABLED=0 GOOS=freebsd GOARCH=amd64 go build -a \
     	-ldflags "-extldflags '-static' -X main.Version=$(shell git describe --long --dirty)" \
     	-o $@ ./cmd/p2
 
