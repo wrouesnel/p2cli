@@ -14,8 +14,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/alecthomas/kingpin"
-	"github.com/wrouesnel/p2cli/pkg/templating"
 	"io/ioutil"
 	"os"
 	"path"
@@ -23,9 +21,12 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/alecthomas/kingpin"
+	"github.com/wrouesnel/p2cli/pkg/templating"
+
 	"github.com/flosch/pongo2/v4"
 	"github.com/kballard/go-shellquote"
-	"github.com/wrouesnel/go.log"
+	log "github.com/wrouesnel/go.log"
 	"gopkg.in/yaml.v2"
 )
 
@@ -70,10 +71,31 @@ var dataFormats = map[string]SupportedType{
 	"env":  TypeEnv,
 }
 
+type Options struct {
+	DumpInputData bool
+
+	Format       string
+	UseEnvKey    bool
+	IncludeEnv   bool
+	TemplateFile string
+	DataFile     string
+	OutputFile   string
+
+	TarFile bool
+
+	CustomFilters     string
+	CustomFilterNoops bool
+
+	Autoescape bool
+
+	DirectoryMode     bool
+	FilenameSubstrDel string // A substring in the output filename which should be deleted when rendering templates in directory mode.
+}
+
 // CustomFilterSpec is a map of custom filters p2 implements. These are gated
 // behind the --enable-filter command line option as they can have unexpected
 // or even unsafe behavior (i.e. templates gain the ability to make filesystem
-//modifications). Disabled filters are stubbed out to allow for debugging.
+// modifications). Disabled filters are stubbed out to allow for debugging.
 type CustomFilterSpec struct {
 	FilterFunc pongo2.FilterFunction
 	NoopFunc   pongo2.FilterFunction
@@ -132,27 +154,7 @@ func main() {
 // realMain implements the actual functionality of the program so it can be called inline from testing.
 // env is normally passed the environment variable array.
 func realMain(env []string) int {
-	options := struct {
-		DumpInputData bool
-
-		Format       string
-		UseEnvKey    bool
-		IncludeEnv   bool
-		TemplateFile string
-		DataFile     string
-		OutputFile   string
-
-		TarFile bool
-
-		CustomFilters     string
-		CustomFilterNoops bool
-
-		Autoescape bool
-
-		DirectoryMode bool
-	}{
-		Format: "",
-	}
+	options := Options{}
 
 	app := kingpin.New("p2cli", "Command line templating application based on pongo2")
 	app.Version(Version)
@@ -166,6 +168,7 @@ func realMain(env []string) int {
 
 	app.Flag("template", "Template file to process").Short('t').Required().StringVar(&options.TemplateFile)
 	app.Flag("directory-mode", "Treat template path as directory-tree, output path as target directory").BoolVar(&options.DirectoryMode)
+	app.Flag("dm-filename-substr-del", "Delete a given substring in the output filename - to be used when directory mode is enabled").StringVar(&options.FilenameSubstrDel)
 	app.Flag("input", "Input data path. Leave blank for stdin.").Short('i').StringVar(&options.DataFile)
 	app.Flag("output", "Output file. Leave blank for stdout.").Short('o').StringVar(&options.OutputFile)
 
@@ -392,9 +395,10 @@ func realMain(env []string) int {
 				return errors.New("Error loading template")
 			}
 
-			outputPath, err := filepath.Abs(filepath.Join(options.OutputFile, relPath))
+			newRelPath := transformFileName(relPath, options)
+			outputPath, err := filepath.Abs(filepath.Join(options.OutputFile, newRelPath))
 			if err != nil {
-				log.Errorln("Could not determine absolute path of output file", options.OutputFile, relPath)
+				log.Errorln("Could not determine absolute path of output file", options.OutputFile, newRelPath)
 				return errors.New("Error determining output path")
 			}
 
@@ -487,4 +491,12 @@ func LoadTemplate(templatePath string) *pongo2.Template {
 	}
 
 	return tmpl
+}
+
+// transformFileName applies modifications specified by the user to the resulting output filename
+// This function is only invoked in Directory Mode.
+func transformFileName(relPath string, options Options) string {
+	filename := filepath.Base(relPath)
+	transformedFileName := strings.Replace(filename, options.FilenameSubstrDel, "", -1)
+	return filepath.Join(filepath.Dir(relPath), transformedFileName)
 }

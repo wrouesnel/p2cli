@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	. "gopkg.in/check.v1"
 	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
+
+	. "gopkg.in/check.v1"
 )
 
 // Hook up gocheck into the "go test" runner.
@@ -295,7 +296,21 @@ func (s *p2Integration) TestDirectoryMode(c *C) {
 		"-o", "tests/directory-mode/output"}
 
 	exit := realMain(os.Environ())
-	c.Assert(exit, Equals, 0, Commentf("Exit code for dirextory mode != 0"))
+	c.Assert(exit, Equals, 0, Commentf("Exit code for directory mode != 0"))
+}
+
+func (s *p2Integration) TestFilenameSubstringDeleteForDirectoryMode(c *C) {
+	os.Args = []string{"p2", "--directory-mode", "--dm-filename-substr-del", ".tmpl", "-t", "tests/directory-mode-filename-transform/templates",
+		"-o", "tests/directory-mode-filename-transform/output"}
+	exit := realMain(os.Environ())
+	c.Assert(exit, Equals, 0, Commentf("Exit code for deleting substring in filename when in directory mode != 0"))
+
+	// Check output file exists
+	expectedFilePath := "tests/directory-mode-filename-transform/output/dir1/template1.txt"
+	if _, err := os.Stat(expectedFilePath); err != nil {
+		fmt.Printf("Expected file: %s does not exist\n", expectedFilePath)
+		c.Fail()
+	}
 }
 
 // TestInvalidEnvironmentVariables tests that invalid environment variables in the input still allow the the template
