@@ -143,7 +143,6 @@ func FilterSetMode(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo
 	return pongo2.AsValue(""), nil
 }
 
-
 func FilterIndent(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
 	if !in.IsString() {
 		return nil, &pongo2.Error{
@@ -168,7 +167,7 @@ func FilterIndent(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2
 
 	splitStr := strings.Split(input, "\n")
 	for idx, v := range splitStr {
-		splitStr[idx] = fmt.Sprintf("%s%s",indent,v)
+		splitStr[idx] = fmt.Sprintf("%s%s", indent, v)
 	}
 	return pongo2.AsValue(strings.Join(splitStr, "\n")), nil
 }
@@ -199,7 +198,7 @@ func FilterToJson(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2
 
 	if err != nil {
 		return nil, &pongo2.Error{
-			Sender: "filter:ToJson",
+			Sender:    "filter:ToJson",
 			OrigError: err,
 		}
 	}
@@ -213,7 +212,7 @@ func FilterToYaml(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2
 	b, err := yaml.Marshal(intf)
 	if err != nil {
 		return nil, &pongo2.Error{
-			Sender: "filter:ToJson",
+			Sender:    "filter:ToJson",
 			OrigError: err,
 		}
 	}
@@ -226,7 +225,7 @@ func FilterToToml(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2
 	b, err := toml.Marshal(intf)
 	if err != nil {
 		return nil, &pongo2.Error{
-			Sender: "filter:ToToml",
+			Sender:    "filter:ToToml",
 			OrigError: err,
 		}
 	}
