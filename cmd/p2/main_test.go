@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"strings"
 	"testing"
 
@@ -300,13 +301,15 @@ func (s *p2Integration) TestDirectoryMode(c *C) {
 }
 
 func (s *p2Integration) TestFilenameSubstringDeleteForDirectoryMode(c *C) {
-	os.Args = []string{"p2", "--directory-mode", "--dm-filename-substr-del", ".tmpl", "-t", "tests/directory-mode-filename-transform/templates",
-		"-o", "tests/directory-mode-filename-transform/output"}
+	testOutputDir := c.MkDir()
+
+	os.Args = []string{"p2", "--directory-mode", "--directory-mode-filename-substr-del", ".tmpl", "-t", "tests/directory-mode-filename-transform/templates",
+		"-o", testOutputDir}
 	exit := realMain(os.Environ())
 	c.Assert(exit, Equals, 0, Commentf("Exit code for deleting substring in filename when in directory mode != 0"))
 
 	// Check output file exists
-	expectedFilePath := "tests/directory-mode-filename-transform/output/dir1/template1.txt"
+	expectedFilePath := path.Join(testOutputDir, "dir1/template1.txt")
 	if _, err := os.Stat(expectedFilePath); err != nil {
 		fmt.Printf("Expected file: %s does not exist\n", expectedFilePath)
 		c.Fail()

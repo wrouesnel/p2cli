@@ -168,7 +168,7 @@ func realMain(env []string) int {
 
 	app.Flag("template", "Template file to process").Short('t').Required().StringVar(&options.TemplateFile)
 	app.Flag("directory-mode", "Treat template path as directory-tree, output path as target directory").BoolVar(&options.DirectoryMode)
-	app.Flag("dm-filename-substr-del", "Delete a given substring in the output filename - to be used when directory mode is enabled").StringVar(&options.FilenameSubstrDel)
+	app.Flag("directory-mode-filename-substr-del", "Delete a given substring in the output filename (only applies to --directory-mode)").StringVar(&options.FilenameSubstrDel)
 	app.Flag("input", "Input data path. Leave blank for stdin.").Short('i').StringVar(&options.DataFile)
 	app.Flag("output", "Output file. Leave blank for stdout.").Short('o').StringVar(&options.OutputFile)
 
@@ -193,9 +193,14 @@ func realMain(env []string) int {
 			return 1
 		}
 
-		ost, _ := os.Stat(options.OutputFile)
-		if !ost.IsDir() {
-			log.Errorln("Output path must be an existing directory in directory mode:", options.TemplateFile)
+		ost, err := os.Stat(options.OutputFile)
+		if err == nil {
+			if !ost.IsDir() {
+				log.Errorln("Output path must be an existing directory in directory mode:", options.TemplateFile)
+				return 1
+			}
+		} else {
+			log.Errorln("Error calling stat on output path:", err.Error())
 			return 1
 		}
 	}
