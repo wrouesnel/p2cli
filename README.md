@@ -87,10 +87,14 @@ to support this mode.
 
 #### Delete substrings in output filenames when `--directory-mode` enabled
 
-You can use the optional flag `--dm-filename-substr-del` to delete substrings that are present in output filenames
-when running `p2` with `--directory-mode` enabled. 
+You can use the optional flag `--directory-mode-filename-substr-del` to delete 
+substrings that are present in output filenames when running `p2` with 
+`--directory-mode` enabled. 
 
-This is useful for cases where your templates have asuffix e.g `.tmpl`, `.template` that you want removed once the template has been rendered. For example, the output file for a template named `mytemplate.tmpl.json` will become `mytemplate.json`.
+This is useful for cases where your templates have asuffix e.g `.tmpl`, 
+`.template` that you want removed once the template has been rendered. For 
+example, the output file for a template named `mytemplate.tmpl.json` will 
+become `mytemplate.json`.
 
 #### Side-effectful filters
 `p2` allows enabling a suite of non-standard pongo2 filters which have
