@@ -205,6 +205,3 @@ Go to build a cgo-independent, statically linked binary.
 
 Note: users on platforms other then Linux will need to specify GOOS when
 building.
-
-### Vendoring
-Vendoring is managed by govendor
