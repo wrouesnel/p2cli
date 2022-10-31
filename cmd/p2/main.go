@@ -14,6 +14,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/alecthomas/kong"
+	"github.com/flosch/pongo2/v4"
 	"io/ioutil"
 	"os"
 	"path"
@@ -21,17 +23,18 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/alecthomas/kingpin"
+	"github.com/kballard/go-shellquote"
+	"github.com/samber/lo"
 	"github.com/wrouesnel/p2cli/pkg/templating"
 
-	"github.com/flosch/pongo2/v4"
-	"github.com/kballard/go-shellquote"
 	log "github.com/wrouesnel/go.log"
 	"gopkg.in/yaml.v2"
 )
 
 // Version is populated by the build system.
 var Version = "development"
+
+const description = "Pongo2 based command line templating tool"
 
 // Copied from pongo2.context
 var reIdentifiers = regexp.MustCompile("^[a-zA-Z0-9_]+$")
@@ -72,24 +75,23 @@ var dataFormats = map[string]SupportedType{
 }
 
 type Options struct {
-	DumpInputData bool
+	DumpInputData bool `name:"debug" help:"Print Go serialization to stderr and then exit"`
 
-	Format       string
-	UseEnvKey    bool
-	IncludeEnv   bool
-	TemplateFile string
-	DataFile     string
-	OutputFile   string
+	Format       string `help:"Input data format (may specify multiple values)" enum:"auto,env,envkey,json,yml,yaml" default:"auto"`
+	IncludeEnv   bool   `help:"Implicitly include environment variables in addition to any supplied data"`
+	TemplateFile string `name:"template" help:"Template file to process" short:"t" required:""`
+	DataFile     string `name:"input" help:"Input data path. Leave blank for stdin." short:"i"`
+	OutputFile   string `name:"output" help:"Output file. Leave blank for stdout." short:"o"`
 
-	TarFile bool
+	TarFile bool `name:"tar" help:"Output content as a tar file"`
 
-	CustomFilters     string
-	CustomFilterNoops bool
+	CustomFilters     string `name:"enable-filters" help:"Enable custom P2 filters"`
+	CustomFilterNoops bool   `name:"enable-noop-filters" help:"Enable all custom filters in no-op mode. Supercedes --enable-filters."`
 
-	Autoescape bool
+	Autoescape bool `help:"Enable autoescaping"`
 
-	DirectoryMode     bool
-	FilenameSubstrDel string // A substring in the output filename which should be deleted when rendering templates in directory mode.
+	DirectoryMode     bool   `help:"Treat template path as directory-tree, output path as target directory"`
+	FilenameSubstrDel string `help:"Delete a given substring in the output filename (only applies to --directory-mode)"`
 }
 
 // CustomFilterSpec is a map of custom filters p2 implements. These are gated
@@ -156,35 +158,9 @@ func main() {
 func realMain(env []string) int {
 	options := Options{}
 
-	app := kingpin.New("p2cli", "Command line templating application based on pongo2")
-	app.Version(Version)
-
-	app.Flag("debug", "Print Go serialization to stderr and then exit").Short('d').BoolVar(&options.DumpInputData)
-	app.Flag("format", "Input data format (may specify multiple values)").Default("").Short('f').
-		EnumVar(&options.Format, "", "env", "envkey", "json", "yml", "yaml")
-
-	app.Flag("use-env-key", "Treat --input as an environment key name to read.").BoolVar(&options.UseEnvKey)
-	app.Flag("include-env", "Implicitly include environment variables in addition to any supplied data").BoolVar(&options.IncludeEnv)
-
-	app.Flag("template", "Template file to process").Short('t').Required().StringVar(&options.TemplateFile)
-	app.Flag("directory-mode", "Treat template path as directory-tree, output path as target directory").BoolVar(&options.DirectoryMode)
-	app.Flag("directory-mode-filename-substr-del", "Delete a given substring in the output filename (only applies to --directory-mode)").StringVar(&options.FilenameSubstrDel)
-	app.Flag("input", "Input data path. Leave blank for stdin.").Short('i').StringVar(&options.DataFile)
-	app.Flag("output", "Output file. Leave blank for stdout.").Short('o').StringVar(&options.OutputFile)
-
-	app.Flag("tar", "Output content as a tar file").BoolVar(&options.TarFile)
-
-	app.Flag("enable-filters", "Enable custom p2 filters.").StringVar(&options.CustomFilters)
-	app.Flag("enable-noop-filters", "Enable all custom filters in noop mode. Supercedes --enable-filters").BoolVar(&options.CustomFilterNoops)
-
-	app.Flag("autoescape", "Enable autoescaping (disabled by default)").BoolVar(&options.Autoescape)
-
-	kingpin.MustParse(app.Parse(os.Args[1:]))
-
-	if options.TemplateFile == "" {
-		log.Errorln("Template file must be specified!")
-		return 1
-	}
+	// Command line parsing can now happen
+	kong.Parse(&options,
+		kong.Description(description))
 
 	if options.DirectoryMode {
 		tst, _ := os.Stat(options.TemplateFile)
@@ -208,7 +184,7 @@ func realMain(env []string) int {
 	// Register custom filter functions.
 	if options.CustomFilterNoops {
 		for filter, spec := range customFilters {
-			pongo2.RegisterFilter(filter, spec.NoopFunc)
+			lo.Must0(pongo2.RegisterFilter(filter, spec.NoopFunc))
 		}
 	} else {
 		// Register enabled custom-filters
@@ -220,39 +196,45 @@ func realMain(env []string) int {
 					return 1
 				}
 
-				pongo2.RegisterFilter(filter, spec.FilterFunc)
+				lo.Must0(pongo2.RegisterFilter(filter, spec.FilterFunc))
 			}
 		}
 	}
 
 	// Register the default custom filters. These are replaced each file execution later, but we
 	// need the names in-scope here.
-	pongo2.RegisterFilter("SetOwner", templating.FilterSetOwner)
-	pongo2.RegisterFilter("SetGroup", templating.FilterSetGroup)
-	pongo2.RegisterFilter("SetMode", templating.FilterSetMode)
+	lo.Must0(pongo2.RegisterFilter("SetOwner", templating.FilterSetOwner))
+	lo.Must0(pongo2.RegisterFilter("SetGroup", templating.FilterSetGroup))
+	lo.Must0(pongo2.RegisterFilter("SetMode", templating.FilterSetMode))
 
 	// Standard suite of custom helpers
-	pongo2.RegisterFilter("indent", templating.FilterIndent)
+	lo.Must0(pongo2.RegisterFilter("indent", templating.FilterIndent))
 
-	pongo2.RegisterFilter("to_json", templating.FilterToJson)
-	pongo2.RegisterFilter("to_yaml", templating.FilterToYaml)
-	pongo2.RegisterFilter("to_toml", templating.FilterToToml)
+	lo.Must0(pongo2.RegisterFilter("to_json", templating.FilterToJson))
+	lo.Must0(pongo2.RegisterFilter("to_yaml", templating.FilterToYaml))
+	lo.Must0(pongo2.RegisterFilter("to_toml", templating.FilterToToml))
 
-	pongo2.RegisterFilter("to_base64", templating.FilterToBase64)
-	pongo2.RegisterFilter("from_base64", templating.FilterFromBase64)
+	lo.Must0(pongo2.RegisterFilter("to_base64", templating.FilterToBase64))
+	lo.Must0(pongo2.RegisterFilter("from_base64", templating.FilterFromBase64))
 
-	pongo2.RegisterFilter("string", templating.FilterString)
-	pongo2.RegisterFilter("bytes", templating.FilterBytes)
+	lo.Must0(pongo2.RegisterFilter("string", templating.FilterString))
+	lo.Must0(pongo2.RegisterFilter("bytes", templating.FilterBytes))
 
-	pongo2.RegisterFilter("to_gzip", templating.FilterToGzip)
-	pongo2.RegisterFilter("from_gzip", templating.FilterFromGzip)
+	lo.Must0(pongo2.RegisterFilter("to_gzip", templating.FilterToGzip))
+	lo.Must0(pongo2.RegisterFilter("from_gzip", templating.FilterFromGzip))
 
 	// Determine mode of operations
 	var fileFormat SupportedType
 	inputSource := SourceEnv
+
 	if options.DataFile == "" && options.Format == "" {
 		fileFormat = TypeEnv
 		inputSource = SourceEnv
+	} else if options.Format == "envkey" && options.DataFile == "" {
+		log.Errorln("envkey is incompatible with stdin file input.")
+		return 1
+	} else if options.Format == "envkey" && options.DataFile != "" {
+		inputSource = SourceEnvKey
 	} else if options.DataFile != "" && options.Format == "" {
 		var ok bool
 		fileFormat, ok = dataFormats[strings.TrimLeft(path.Ext(options.DataFile), ".")]
@@ -277,12 +259,6 @@ func realMain(env []string) int {
 			return 1
 		}
 		inputSource = SourceFile
-	}
-
-	if options.UseEnvKey && options.DataFile == "" {
-		log.Errorln("--use-env-key is incompatible with stdin file input.")
-	} else if options.UseEnvKey {
-		inputSource = SourceEnvKey
 	}
 
 	var err error

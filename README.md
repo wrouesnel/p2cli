@@ -40,6 +40,8 @@ Render a template using a YAML on stdin:
 cat someYaml | p2 -t template.j2 -f yaml
 ```
 
+Render a template using values from Kubernetes
+
 ### Advanced Usage
 
 #### Extra Built-In Filters
