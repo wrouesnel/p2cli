@@ -7,5 +7,5 @@
 /.idea
 /.vscode
 /coverage
-/cmd/p2/tests/directory-mode*/output/
+/pkg/entrypoint/tests/directory-mode*/output/
 
