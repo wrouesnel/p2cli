@@ -2,14 +2,15 @@ package entrypoint_test
 
 import (
 	"fmt"
-	"github.com/samber/lo"
-	"github.com/wrouesnel/p2cli/pkg/entrypoint"
-	"github.com/wrouesnel/p2cli/pkg/envutil"
 	"io/ioutil"
 	"os"
 	"path"
 	"strings"
 	"testing"
+
+	"github.com/samber/lo"
+	"github.com/wrouesnel/p2cli/pkg/entrypoint"
+	"github.com/wrouesnel/p2cli/pkg/envutil"
 
 	. "gopkg.in/check.v1"
 )
@@ -29,7 +30,7 @@ func MustReadFile(filePath string) []byte {
 	return testResult
 }
 
-// Open a file or panic the test
+// Open a file or panic the test.
 func MustOpenFile(filepath string) *os.File {
 	f, err := os.OpenFile(filepath, os.O_RDONLY, os.FileMode(0777))
 	if err != nil {
@@ -39,7 +40,7 @@ func MustOpenFile(filepath string) *os.File {
 }
 
 // TestInputDataProducesIdenticalOutput tests basic input/output and extension
-// inference works
+// inference works.
 func (s *p2Integration) TestInputDataProducesIdenticalOutput(c *C) {
 	// Template files
 	const templateFile string = "tests/data.p2"

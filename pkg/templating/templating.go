@@ -7,10 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/flosch/pongo2/v4"
-	"github.com/pelletier/go-toml"
-	"go.uber.org/zap"
-	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
 	"os"
@@ -18,6 +14,11 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/flosch/pongo2/v4"
+	"github.com/pelletier/go-toml"
+	"go.uber.org/zap"
+	"gopkg.in/yaml.v2"
 )
 
 // Directory Mode filters are special filters which are activated during directory mode processing. They do things
