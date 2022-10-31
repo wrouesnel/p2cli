@@ -3,8 +3,9 @@ package entrypoint
 import (
 	"errors"
 	"fmt"
-	"github.com/flosch/pongo2/v4"
 	"os"
+
+	"github.com/flosch/pongo2/v4"
 )
 
 // This noop filter is registered in place of custom filters which otherwise

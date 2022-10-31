@@ -1,10 +1,11 @@
 package main
 
 import (
+	"os"
+
 	"github.com/samber/lo"
 	"github.com/wrouesnel/p2cli/pkg/entrypoint"
 	"github.com/wrouesnel/p2cli/pkg/envutil"
-	"os"
 )
 
 func main() {

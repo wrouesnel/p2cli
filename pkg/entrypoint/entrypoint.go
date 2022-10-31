@@ -14,10 +14,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/alecthomas/kong"
-	"github.com/flosch/pongo2/v4"
-	"github.com/samber/lo"
-	"github.com/wrouesnel/p2cli/pkg/errdefs"
 	"io"
 	"io/ioutil"
 	"os"
@@ -25,6 +21,11 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/alecthomas/kong"
+	"github.com/flosch/pongo2/v4"
+	"github.com/samber/lo"
+	"github.com/wrouesnel/p2cli/pkg/errdefs"
 
 	"github.com/kballard/go-shellquote"
 	"github.com/wrouesnel/p2cli/pkg/templating"
@@ -39,18 +40,18 @@ var Version = "development"
 
 const description = "Pongo2 based command line templating tool"
 
-// Copied from pongo2.context
+// Copied from pongo2.context.
 var reIdentifiers = regexp.MustCompile("^[a-zA-Z0-9_]+$")
 
 // SupportedType is an enumeration of data types we support.
 type SupportedType int
 
 const (
-	// TypeUnknown is the default error type
+	// TypeUnknown is the default error type.
 	TypeUnknown SupportedType = iota
-	// TypeJSON is JSON
+	// TypeJSON is JSON.
 	TypeJSON SupportedType = iota
-	// TypeYAML is YAML
+	// TypeYAML is YAML.
 	TypeYAML SupportedType = iota
 	// TypeEnv is key=value pseudo environment files.
 	TypeEnv SupportedType = iota
@@ -60,13 +61,13 @@ const (
 type DataSource int
 
 const (
-	// SourceEnv means input comes from environment variables
+	// SourceEnv means input comes from environment variables.
 	SourceEnv DataSource = iota
-	// SourceEnvKey means input comes from the value of a specific environment key
+	// SourceEnvKey means input comes from the value of a specific environment key.
 	SourceEnvKey DataSource = iota
-	// SourceStdin means input comes from stdin
+	// SourceStdin means input comes from stdin.
 	SourceStdin DataSource = iota
-	// SourceFile means input comes from a file
+	// SourceFile means input comes from a file.
 	SourceFile DataSource = iota
 )
 

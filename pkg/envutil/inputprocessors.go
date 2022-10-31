@@ -2,9 +2,10 @@ package envutil
 
 import (
 	"errors"
-	"github.com/wrouesnel/p2cli/pkg/errdefs"
 	"os"
 	"strings"
+
+	"github.com/wrouesnel/p2cli/pkg/errdefs"
 )
 
 // FromEnvironment consumes the environment and outputs a valid input data field into the
