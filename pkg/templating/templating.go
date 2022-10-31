@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"github.com/flosch/pongo2/v4"
 	"github.com/pelletier/go-toml"
-	log "github.com/wrouesnel/go.log"
+	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
@@ -379,10 +379,15 @@ func FilterFromGzip(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pong
 	return pongo2.AsValue(output), nil
 }
 
-func ExecuteTemplate(tmpl *pongo2.Template, inputData pongo2.Context, outputPath string, rootDir string) error {
+type TemplateEngine struct {
+	StdOut io.Writer
+}
+
+func (te *TemplateEngine) ExecuteTemplate(tmpl *pongo2.Template, inputData pongo2.Context, outputPath string, rootDir string) error {
+	logger := zap.L()
 	cwd, err := os.Getwd()
 	if err != nil {
-		log.Errorln("Could not get the current working directory:", err)
+		logger.Error("Could not get the current working directory", zap.Error(err))
 	}
 
 	ctx := make(pongo2.Context)
@@ -416,7 +421,7 @@ func ExecuteTemplate(tmpl *pongo2.Template, inputData pongo2.Context, outputPath
 			return fmt.Errorf("Could not change to template output path directory: %w", err)
 		}
 	} else {
-		outputWriter = os.Stdout
+		outputWriter = te.StdOut
 		outputPath = stdoutVal
 
 		p2cliCtx["OutputPath"] = stdoutVal
