@@ -10,4 +10,5 @@
 /pkg/entrypoint/tests/directory-mode*/output/
 /.bin
 /.junit
+/bin
 
