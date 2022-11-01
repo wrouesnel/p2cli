@@ -315,9 +315,6 @@ func Entrypoint(args LaunchArgs) int {
 
 	switch fileFormat {
 	case TypeEnv:
-		if options.IncludeEnv {
-			logger.Warn("--include-env has no effect when data source is already the environment")
-		}
 		err = func(inputData map[string]interface{}) error {
 			//nolint:nestif
 			if inputSource != SourceEnv {
@@ -358,6 +355,10 @@ func Entrypoint(args LaunchArgs) int {
 					inputData[splitKeyVal[0]] = values[0]
 				}
 			} else {
+				if options.IncludeEnv {
+					logger.Warn("--include-env has no effect when data source is already the environment")
+				}
+
 				for k, v := range args.Env {
 					inputData[k] = v
 				}
