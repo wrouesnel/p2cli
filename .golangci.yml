@@ -95,6 +95,10 @@ linters-settings:
       - fn
       - st
       - e
+      - in
+      - wr
+      - rd
+      - b
     # Optional list of variable declarations that should be ignored completely. (defaults to empty list)
     # Entries must be in one of the following forms (see below for examples):
     # - for variables, parameters, named return values, method receivers, or type parameters:
@@ -143,3 +147,9 @@ linters-settings:
   wrapcheck:
     ignoreSigRegexps:
       - func \(github\.com/labstack/echo/v4\.Context\)
+
+  gomnd:
+    ignored-functions:
+      - 'math.*'
+      - 'http.StatusText'
+      - "strconv.Parse.*"
