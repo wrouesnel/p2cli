@@ -87,6 +87,15 @@ changed to be the output directory location of the input template file.
 The `SetOwner`, `SetGroup`, and `SetMode` special filters exist principally
 to support this mode.
 
+#### `tar` file output mode
+
+This should generally be used with `--directory-mode` as without a filename
+the tar file is unlikely to be useful.
+
+In this mode, the `--output-path` parameter specifies the base prefix of files
+within the emitted `tar` file, and the `--tar` parameter specifies the name
+of a tar file to output. `--tar -` can be used to pipe the TAR file to stdout.
+
 #### Delete substrings in output filenames when `--directory-mode` enabled
 
 You can use the optional flag `--directory-mode-filename-substr-del` to delete 
@@ -205,5 +214,5 @@ docker run -v $(pwd):/t -ti p2 -t /t/template.p2 -i /t/input.yml
 It is recommended to build using the included Makefile. This correctly sets up
 Go to build a cgo-independent, statically linked binary.
 
-Note: users on platforms other then Linux will need to specify GOOS when
+Note: users on platforms other than Linux will need to specify GOOS when
 building.
