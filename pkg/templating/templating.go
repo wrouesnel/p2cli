@@ -34,6 +34,8 @@ func (e FilterError) Error() string {
 // name of the output file.
 type FilterSet struct {
 	OutputFileName string
+	Chown          func(name string, uid, gid int) error
+	Chmod          func(name string, mode os.FileMode) error
 }
 
 func (fs *FilterSet) FilterSetOwner(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
@@ -68,7 +70,7 @@ func (fs *FilterSet) FilterSetOwner(in *pongo2.Value, param *pongo2.Value) (*pon
 		}
 	}
 
-	if err := os.Chown(fs.OutputFileName, uid, -1); err != nil {
+	if err := fs.Chown(fs.OutputFileName, uid, -1); err != nil {
 		return nil, &pongo2.Error{
 			Sender:    "filter:SetOwner",
 			OrigError: err,
@@ -143,7 +145,7 @@ func (fs *FilterSet) FilterSetMode(in *pongo2.Value, param *pongo2.Value) (*pong
 
 	mode = os.FileMode(intmode)
 
-	if err := os.Chmod(fs.OutputFileName, mode); err != nil {
+	if err := fs.Chmod(fs.OutputFileName, mode); err != nil {
 		return nil, &pongo2.Error{
 			Sender:    "filter:SetMode",
 			OrigError: err,

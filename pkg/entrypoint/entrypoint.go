@@ -9,6 +9,7 @@ python.
 package entrypoint
 
 import (
+	"archive/tar"
 	"bufio"
 	"bytes"
 	"encoding/json"
@@ -20,9 +21,11 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
+
+	"github.com/wrouesnel/p2cli/pkg/fileconsts"
 
 	"github.com/pkg/errors"
-	"github.com/wrouesnel/p2cli/pkg/fileconsts"
 	"github.com/wrouesnel/p2cli/version"
 
 	"github.com/alecthomas/kong"
@@ -96,7 +99,7 @@ type Options struct {
 	DataFile     string `name:"input" help:"Input data path. Leave blank for stdin." short:"i"`
 	OutputFile   string `name:"output" help:"Output file. Leave blank for stdout." short:"o"`
 
-	TarFile bool `name:"tar" help:"Output content as a tar file"`
+	TarFile string `name:"tar" help:"Output content as a tar file with the given name or to stdout (-)" default:""`
 
 	CustomFilters     string `name:"enable-filters" help:"Enable custom P2 filters"`
 	CustomFilterNoops bool   `name:"enable-noop-filters" help:"Enable all custom filters in no-op mode. Supercedes --enable-filters."`
@@ -221,7 +224,8 @@ func Entrypoint(args LaunchArgs) int {
 				logger.Error("Output path must be an existing directory in directory mode", zap.String("template_file", options.TemplateFile))
 				return 1
 			}
-		} else {
+		} else if options.TarFile == "" {
+			// Allow non-existent output path if outputting to a tar file
 			logger.Error("Error calling stat on output path", zap.Error(err))
 			return 1
 		}
@@ -245,7 +249,7 @@ func Entrypoint(args LaunchArgs) int {
 	}
 
 	// filterSet is passed to executeTemplate so it can vary parameters within the filter space as it goes.
-	filterSet := templating.FilterSet{OutputFileName: ""}
+	filterSet := templating.FilterSet{OutputFileName: "", Chown: os.Chown, Chmod: os.Chmod}
 
 	// Register the default custom filters. These are replaced each file execution later, but we
 	// need the names in-scope here.
@@ -518,16 +522,145 @@ func Entrypoint(args LaunchArgs) int {
 		inputMaps[outputPath] = templating.StdOutVal
 	}
 
-	// If we're in directory mode then we'll create a directory tree. If we're not, then we won't.
-	if options.DirectoryMode {
+	// Configure output path
+	var templateEngine *templating.TemplateEngine
+	switch {
+	case options.TarFile != "":
+		var fileOut io.Writer
+		if options.TarFile == "-" {
+			fileOut = args.StdOut
+		} else {
+			fileOut, err = os.OpenFile(options.TarFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.FileMode(fileconsts.OS_ALL_RWX))
+			if err != nil {
+				logger.Error("Error opening tar file for output", zap.Error(err))
+				return 1
+			}
+		}
+		tarWriter := tar.NewWriter(fileOut)
+		templateEngine = &templating.TemplateEngine{
+			PrepareOutput: func(inputData pongo2.Context, outputPath string) (io.Writer, func() error, error) {
+				relPath, err := filepath.Rel(rootDir, outputPath)
+				if err != nil {
+					return nil, nil, fmt.Errorf("could not determine relative output path: %w", err)
+				}
+
+				// Setup a new header
+				header := &tar.Header{
+					Typeflag: tar.TypeReg,
+					Name:     filepath.Join(options.OutputFile, relPath),
+					//Linkname:   "",
+					Size:       0,
+					Mode:       fileconsts.OS_ALL_RWX,
+					Uid:        0,
+					Gid:        0,
+					Uname:      "",
+					Gname:      "",
+					ModTime:    time.Time{},
+					AccessTime: time.Time{},
+					ChangeTime: time.Time{},
+					//Devmajor:   0,
+					//Devminor:   0,
+					//Xattrs:     nil,
+					//PAXRecords: nil,
+					//Format:     0,
+				}
+
+				// Modify filterSet so we receive the Chown/Chmod operations
+				filterSet.Chown = func(name string, uid, gid int) error {
+					if uid != -1 {
+						header.Uid = uid
+					}
+					if gid != -1 {
+						header.Gid = gid
+					}
+					return nil
+				}
+				filterSet.Chmod = func(name string, mode os.FileMode) error {
+					header.Mode = int64(mode)
+					return nil
+				}
+
+				// Setup a buffer for the output
+				buf := new(bytes.Buffer)
+
+				finalizer := func() error {
+					header.Size = int64(buf.Len())
+					if err := tarWriter.WriteHeader(header); err != nil {
+						return errors.Wrap(err, "entrypoint: write header for tar file failed")
+					}
+					if _, err := tarWriter.Write(buf.Bytes()); err != nil {
+						return errors.Wrap(err, "entrypoint: write file body for tar file failed")
+					}
+					return nil
+				}
+
+				return buf, finalizer, nil
+			},
+		}
+
+	case options.DirectoryMode:
 		for outputPath := range templates {
 			if err := os.MkdirAll(filepath.Dir(outputPath), os.FileMode(fileconsts.OS_ALL_RWX)); err != nil {
 				logger.Error("Error while creating directory for output")
 			}
 		}
-	}
+		templateEngine = &templating.TemplateEngine{
+			PrepareOutput: func(inputData pongo2.Context, outputPath string) (io.Writer, func() error, error) {
+				origWorkDir, err := os.Getwd()
+				if err != nil {
+					return nil, nil, errors.Wrap(err, "DirectoryMode")
+				}
 
-	templateEngine := templating.TemplateEngine{StdOut: args.StdOut}
+				if err := os.Chdir(filepath.Dir(outputPath)); err != nil {
+					return nil, nil, fmt.Errorf("could not change to template output path directory: %w", err)
+				}
+
+				fileOut, err := os.OpenFile(outputPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.FileMode(fileconsts.OS_ALL_RWX))
+				if err != nil {
+					return nil, nil, errors.Wrap(err, "entrypoint: error opening output file for writing")
+				}
+
+				finalizer := func() error {
+					if err := os.Chdir(origWorkDir); err != nil {
+						return fmt.Errorf("could not change back to original working directory: %w", err)
+					}
+
+					if err := fileOut.Close(); err != nil {
+						return errors.Wrap(err, "entrypoint: error closing file after writing")
+					}
+					return nil
+				}
+
+				return fileOut, finalizer, nil
+			},
+		}
+
+	case options.OutputFile != "-" && options.OutputFile != "":
+		templateEngine = &templating.TemplateEngine{
+			PrepareOutput: func(inputData pongo2.Context, outputPath string) (io.Writer, func() error, error) {
+				fileOut, err := os.OpenFile(outputPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.FileMode(fileconsts.OS_ALL_RWX))
+				if err != nil {
+					return nil, nil, errors.Wrap(err, "entrypoint: error opening output file for writing")
+				}
+
+				finalizer := func() error {
+					if err := fileOut.Close(); err != nil {
+						return errors.Wrap(err, "entrypoint: error closing file after writing")
+					}
+					return nil
+				}
+
+				return fileOut, finalizer, nil
+			},
+		}
+
+	case options.OutputFile == "-" || options.OutputFile == "":
+		templateEngine = &templating.TemplateEngine{
+			PrepareOutput: func(inputData pongo2.Context, outputPath string) (io.Writer, func() error, error) {
+				return args.StdOut, nil, nil
+			},
+		}
+	}
 
 	failed := false
 	for outputPath, tmpl := range templates {

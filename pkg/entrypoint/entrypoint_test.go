@@ -1,7 +1,10 @@
 package entrypoint_test
 
 import (
+	"archive/tar"
 	"fmt"
+	"github.com/pkg/errors"
+	"io"
 	"io/ioutil"
 	"os"
 	"path"
@@ -352,6 +355,75 @@ func (s *p2Integration) TestDirectoryMode(c *C) {
 
 	exit := entrypoint.Entrypoint(entrypointArgs)
 	c.Assert(exit, Equals, 0, Commentf("Exit code for directory mode != 0"))
+}
+
+func (s *p2Integration) TestTarFileDirectoryModeWithOutputPath(c *C) {
+	const tarName = "tests/directory-mode/tar-outputpath.tar"
+
+	entrypointArgs := entrypoint.LaunchArgs{
+		StdIn:  os.Stdin,
+		StdOut: os.Stdout,
+		StdErr: os.Stderr,
+		Env:    lo.Must(envutil.FromEnvironment(os.Environ())),
+		Args: []string{"--directory-mode", "-t", "tests/directory-mode/templates",
+			"-o", "tests/directory-mode/output", "--tar", tarName},
+	}
+
+	exit := entrypoint.Entrypoint(entrypointArgs)
+	c.Assert(exit, Equals, 0, Commentf("Exit code for directory mode with --tar != 0"))
+
+	tarFile := lo.Must(os.Open(tarName))
+
+	entries := map[string]struct{}{}
+
+	tarReader := tar.NewReader(tarFile)
+	for {
+		header, err := tarReader.Next()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		entries[header.Name] = struct{}{}
+	}
+
+	for _, expected := range []string{"tests/directory-mode/output/dir1/dir2/template2",
+		"tests/directory-mode/output/dir1/template1",
+		"tests/directory-mode/output/dir3/template3"} {
+		_, ok := entries[expected]
+		c.Check(ok, Equals, true, Commentf("%s expected but not found in tar archive", expected))
+	}
+}
+
+func (s *p2Integration) TestTarFileDirectoryModeWithDefaultOutputPath(c *C) {
+	const tarName = "tests/directory-mode/tar-default.tar"
+
+	entrypointArgs := entrypoint.LaunchArgs{
+		StdIn:  os.Stdin,
+		StdOut: os.Stdout,
+		StdErr: os.Stderr,
+		Env:    lo.Must(envutil.FromEnvironment(os.Environ())),
+		Args:   []string{"--directory-mode", "-t", "tests/directory-mode/templates", "--tar", tarName},
+	}
+
+	exit := entrypoint.Entrypoint(entrypointArgs)
+	c.Assert(exit, Equals, 0, Commentf("Exit code for directory mode with --tar != 0"))
+
+	tarFile := lo.Must(os.Open(tarName))
+
+	entries := map[string]struct{}{}
+
+	tarReader := tar.NewReader(tarFile)
+	for {
+		header, err := tarReader.Next()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		entries[header.Name] = struct{}{}
+	}
+
+	for _, expected := range []string{"dir1/dir2/template2", "dir1/template1", "dir3/template3"} {
+		_, ok := entries[expected]
+		c.Check(ok, Equals, true, Commentf("%s expected but not found in tar archive", expected))
+	}
 }
 
 func (s *p2Integration) TestFilenameSubstringDeleteForDirectoryMode(c *C) {

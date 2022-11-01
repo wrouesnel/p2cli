@@ -1,0 +1,5 @@
+This is a template for: {{ name }}
+
+A nested value can be output as: {{ nested.value }}
+
+The following list of values is joined sensibly: {{ listed_value | join:", " }}

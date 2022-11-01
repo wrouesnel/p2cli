@@ -1,0 +1,10 @@
+description: This is an example of directory mode.
+
+purpose: |
+  Directory mode lets us consume a single source of truth input and template
+  multiple files as output. It is useful for configuring docker container
+  entrypoints from environment variables or JSON/YAML files like this.
+
+version: "0.1.1"
+
+subcommand: echo "this is a command"

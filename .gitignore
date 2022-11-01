@@ -8,6 +8,7 @@
 /.vscode
 /coverage
 /pkg/entrypoint/tests/directory-mode*/output/
+/pkg/entrypoint/tests/directory-mode*/*.tar
 /.bin
 /.junit
 /bin

@@ -1,0 +1,10 @@
+name: MyName
+
+nested:
+  value: XX
+
+listed_value:
+  - 1
+  - 2
+  - 4
+  - Outside
