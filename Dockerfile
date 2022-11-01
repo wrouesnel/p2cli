@@ -1,10 +1,17 @@
-FROM golang:1.14 AS build
-RUN go get -v github.com/wrouesnel/p2cli
-WORKDIR $GOPATH/src/github.com/wrouesnel/p2cli
-RUN CGO_ENABLED=0 GOOS=linux go build -a \
-    -ldflags "-extldflags '-static' -X main.Version=$(shell git describe --long --dirty)" \
-    -o /p2 .
+FROM golang:1.18 AS build
+
+RUN mkdir /build
+
+WORKDIR /build
+
+COPY ./ ./
+
+RUN go run mage.go binary
 
 FROM scratch
-COPY --from=build /p2 /p2
-ENTRYPOINT ["/p2"]
+
+COPY --from=build /build/p2 /bin/p2
+
+ENV PATH=/bin:$PATH
+
+ENTRYPOINT ["p2"]
