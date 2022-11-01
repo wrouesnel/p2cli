@@ -3,13 +3,14 @@ package entrypoint_test
 import (
 	"archive/tar"
 	"fmt"
-	"github.com/pkg/errors"
 	"io"
 	"io/ioutil"
 	"os"
 	"path"
 	"strings"
 	"testing"
+
+	"github.com/pkg/errors"
 
 	"github.com/samber/lo"
 	"github.com/wrouesnel/p2cli/pkg/entrypoint"
