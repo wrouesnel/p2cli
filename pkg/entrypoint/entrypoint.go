@@ -12,7 +12,6 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -21,6 +20,10 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/pkg/errors"
+	"github.com/wrouesnel/p2cli/pkg/fileconsts"
+	"github.com/wrouesnel/p2cli/version"
 
 	"github.com/alecthomas/kong"
 	"github.com/flosch/pongo2/v4"
@@ -34,11 +37,6 @@ import (
 
 	"go.uber.org/zap"
 )
-
-// Version is populated by the build system.
-var Version = "development"
-
-const description = "Pongo2 based command line templating tool"
 
 // Copied from pongo2.context.
 var reIdentifiers = regexp.MustCompile("^[a-zA-Z0-9_]+$")
@@ -71,6 +69,7 @@ const (
 	SourceFile DataSource = iota
 )
 
+//nolint:gochecknoglobals
 var dataFormats = map[string]SupportedType{
 	"json": TypeJSON,
 	"yaml": TypeYAML,
@@ -119,6 +118,7 @@ type CustomFilterSpec struct {
 	NoopFunc   pongo2.FilterFunction
 }
 
+//nolint:gochecknoglobals
 var customFilters = map[string]CustomFilterSpec{
 	"write_file": {filterWriteFile, filterNoopPassthru},
 	"make_dirs":  {filterMakeDirs, filterNoopPassthru},
@@ -128,6 +128,7 @@ func readRawInput(env map[string]string, stdIn io.Reader, name string, source Da
 	logger := zap.L()
 	var data []byte
 	var err error
+	//nolint:exhaustive
 	switch source {
 	case SourceStdin:
 		// Read from stdin
@@ -141,17 +142,17 @@ func readRawInput(env map[string]string, stdIn io.Reader, name string, source Da
 		data = []byte(env[name])
 	default:
 		logger.Error("Invalid data source specified.", zap.String("filename", name))
-		return []byte{}, err
+		return []byte{}, errors.Wrap(err, "readRawInput")
 	}
 
 	if err != nil {
 		logger.Error("Could not read data", zap.Error(err), zap.String("filename", name))
-		return []byte{}, err
+		return []byte{}, errors.Wrap(err, "readRawInput")
 	}
 	return data, nil
 }
 
-type EntrypointArgs struct {
+type LaunchArgs struct {
 	StdIn  io.Reader
 	StdOut io.Writer
 	StdErr io.Writer
@@ -161,7 +162,8 @@ type EntrypointArgs struct {
 
 // Entrypoint implements the actual functionality of the program so it can be called inline from testing.
 // env is normally passed the environment variable array.
-func Entrypoint(args EntrypointArgs) int {
+//nolint:funlen,gocognit,gocyclo,cyclop,maintidx
+func Entrypoint(args LaunchArgs) int {
 	var err error
 	options := Options{}
 
@@ -173,10 +175,10 @@ func Entrypoint(args EntrypointArgs) int {
 	})
 
 	// Command line parsing can now happen
-	parser := lo.Must(kong.New(&options, kong.Description(description)))
+	parser := lo.Must(kong.New(&options, kong.Description(version.Description)))
 	_, err = parser.Parse(args.Args)
 	if err != nil {
-		fmt.Fprintf(args.StdErr, "Argument error: %s", err.Error())
+		_, _ = fmt.Fprintf(args.StdErr, "Argument error: %s", err.Error())
 		return 1
 	}
 
@@ -190,6 +192,9 @@ func Entrypoint(args EntrypointArgs) int {
 	logger, err := logConfig.Build()
 	if err != nil {
 		// Error unhandled since this is a very early failure
+		for _, line := range deferredLogs {
+			_, _ = io.WriteString(args.StdErr, line)
+		}
 		_, _ = io.WriteString(args.StdErr, "Failure while building logger")
 		return 1
 	}
@@ -198,10 +203,11 @@ func Entrypoint(args EntrypointArgs) int {
 	zap.ReplaceGlobals(logger)
 
 	if options.Version {
-		lo.Must(fmt.Fprintf(args.StdOut, "%s", Version))
+		lo.Must(fmt.Fprintf(args.StdOut, "%s", version.Version))
 		return 0
 	}
 
+	//nolint:nestif
 	if options.DirectoryMode {
 		tst, _ := os.Stat(options.TemplateFile)
 		if !tst.IsDir() {
@@ -224,53 +230,54 @@ func Entrypoint(args EntrypointArgs) int {
 	// Register custom filter functions.
 	if options.CustomFilterNoops {
 		for filter, spec := range customFilters {
-			pongo2.RegisterFilter(filter, spec.NoopFunc)
+			_ = pongo2.RegisterFilter(filter, spec.NoopFunc)
 		}
-	} else {
-		// Register enabled custom-filters
-		if options.CustomFilters != "" {
-			for _, filter := range strings.Split(options.CustomFilters, ",") {
-				spec, found := customFilters[filter]
-				if !found {
-					logger.Error("This version of p2 does not support the specified custom filter", zap.String("filter_name", filter))
-					return 1
-				}
-
-				pongo2.RegisterFilter(filter, spec.FilterFunc)
+	} else if options.CustomFilters != "" {
+		for _, filter := range strings.Split(options.CustomFilters, ",") {
+			spec, found := customFilters[filter]
+			if !found {
+				logger.Error("This version of p2 does not support the specified custom filter", zap.String("filter_name", filter))
+				return 1
 			}
+
+			_ = pongo2.RegisterFilter(filter, spec.FilterFunc)
 		}
 	}
 
+	// filterSet is passed to executeTemplate so it can vary parameters within the filter space as it goes.
+	filterSet := templating.FilterSet{OutputFileName: ""}
+
 	// Register the default custom filters. These are replaced each file execution later, but we
 	// need the names in-scope here.
-	pongo2.RegisterFilter("SetOwner", templating.FilterSetOwner)
-	pongo2.RegisterFilter("SetGroup", templating.FilterSetGroup)
-	pongo2.RegisterFilter("SetMode", templating.FilterSetMode)
+	_ = pongo2.RegisterFilter("SetOwner", filterSet.FilterSetOwner)
+	_ = pongo2.RegisterFilter("SetGroup", filterSet.FilterSetGroup)
+	_ = pongo2.RegisterFilter("SetMode", filterSet.FilterSetMode)
 
 	// Standard suite of custom helpers
-	pongo2.RegisterFilter("indent", templating.FilterIndent)
+	_ = pongo2.RegisterFilter("indent", filterSet.FilterIndent)
 
-	pongo2.RegisterFilter("to_json", templating.FilterToJson)
-	pongo2.RegisterFilter("to_yaml", templating.FilterToYaml)
-	pongo2.RegisterFilter("to_toml", templating.FilterToToml)
+	_ = pongo2.RegisterFilter("to_json", filterSet.FilterToJSON)
+	_ = pongo2.RegisterFilter("to_yaml", filterSet.FilterToYAML)
+	_ = pongo2.RegisterFilter("to_toml", filterSet.FilterToTOML)
 
-	pongo2.RegisterFilter("to_base64", templating.FilterToBase64)
-	pongo2.RegisterFilter("from_base64", templating.FilterFromBase64)
+	_ = pongo2.RegisterFilter("to_base64", filterSet.FilterToBase64)
+	_ = pongo2.RegisterFilter("from_base64", filterSet.FilterFromBase64)
 
-	pongo2.RegisterFilter("string", templating.FilterString)
-	pongo2.RegisterFilter("bytes", templating.FilterBytes)
+	_ = pongo2.RegisterFilter("string", filterSet.FilterString)
+	_ = pongo2.RegisterFilter("bytes", filterSet.FilterBytes)
 
-	pongo2.RegisterFilter("to_gzip", templating.FilterToGzip)
-	pongo2.RegisterFilter("from_gzip", templating.FilterFromGzip)
+	_ = pongo2.RegisterFilter("to_gzip", filterSet.FilterToGzip)
+	_ = pongo2.RegisterFilter("from_gzip", filterSet.FilterFromGzip)
 
 	// Determine mode of operations
 	var fileFormat SupportedType
 	inputSource := SourceEnv
 
-	if options.Format == FormatAuto && options.DataFile == "" {
+	switch {
+	case options.Format == FormatAuto && options.DataFile == "":
 		fileFormat = TypeEnv
 		inputSource = SourceEnv
-	} else if options.Format == FormatAuto && options.DataFile != "" {
+	case options.Format == FormatAuto && options.DataFile != "":
 		var ok bool
 		fileFormat, ok = dataFormats[strings.TrimLeft(path.Ext(options.DataFile), ".")]
 		if !ok {
@@ -278,7 +285,7 @@ func Entrypoint(args EntrypointArgs) int {
 			return 1
 		}
 		inputSource = SourceFile
-	} else if options.Format != "" && options.DataFile == "" {
+	case options.Format != "" && options.DataFile == "":
 		var ok bool
 		fileFormat, ok = dataFormats[options.Format]
 		if !ok {
@@ -286,7 +293,7 @@ func Entrypoint(args EntrypointArgs) int {
 			return 1
 		}
 		inputSource = SourceStdin
-	} else {
+	default:
 		var ok bool
 		fileFormat, ok = dataFormats[options.Format]
 		if !ok {
@@ -312,6 +319,7 @@ func Entrypoint(args EntrypointArgs) int {
 			logger.Warn("--include-env has no effect when data source is already the environment")
 		}
 		err = func(inputData map[string]interface{}) error {
+			//nolint:nestif
 			if inputSource != SourceEnv {
 				rawInput, err := readRawInput(args.Env, args.StdIn, options.DataFile, inputSource)
 				if err != nil {
@@ -320,9 +328,10 @@ func Entrypoint(args EntrypointArgs) int {
 				lineScanner := bufio.NewScanner(bytes.NewReader(rawInput))
 				for lineScanner.Scan() {
 					keyval := lineScanner.Text()
-					splitKeyVal := strings.SplitN(lineScanner.Text(), "=", 2)
-					if len(splitKeyVal) != 2 {
-						return error(errdefs.ErrorEnvironmentVariables{
+					const expectedFragments = 2
+					splitKeyVal := strings.SplitN(lineScanner.Text(), "=", expectedFragments)
+					if len(splitKeyVal) != expectedFragments {
+						return error(errdefs.EnvironmentVariablesError{
 							Reason:    "Could not find an equals value to split on",
 							RawEnvVar: keyval,
 						})
@@ -331,7 +340,7 @@ func Entrypoint(args EntrypointArgs) int {
 					// raw environment will accept *anything* after the = sign.
 					values, err := shellquote.Split(splitKeyVal[1])
 					if err != nil {
-						return error(errdefs.ErrorEnvironmentVariables{
+						return error(errdefs.EnvironmentVariablesError{
 							Reason:    err.Error(),
 							RawEnvVar: keyval,
 						})
@@ -340,7 +349,7 @@ func Entrypoint(args EntrypointArgs) int {
 					// Detect if more than 1 values was parsed - this is invalid in
 					// sourced files, and we don't want to try parsing shell arrays.
 					if len(values) > 1 {
-						return error(errdefs.ErrorEnvironmentVariables{
+						return error(errdefs.EnvironmentVariablesError{
 							Reason:    "Improperly escaped environment variable. p2 does not parse arrays.",
 							RawEnvVar: keyval,
 						})
@@ -369,6 +378,9 @@ func Entrypoint(args EntrypointArgs) int {
 			return 1
 		}
 		err = json.Unmarshal(rawInput, &inputData)
+	case TypeUnknown:
+		logger.Error("Unknown input format.")
+		return 1
 	default:
 		logger.Error("Unknown input format.")
 		return 1
@@ -395,70 +407,8 @@ func Entrypoint(args EntrypointArgs) int {
 	}
 
 	// Load all templates and their relative paths
-	templates := make(map[string]*pongo2.Template)
+	templates := make(map[string]*templating.LoadedTemplate)
 	inputMaps := make(map[string]string)
-
-	if options.DirectoryMode {
-		err := filepath.Walk(options.TemplateFile, func(path string, info os.FileInfo, err error) error {
-			if info.IsDir() {
-				return nil
-			}
-
-			relPath, err := filepath.Rel(options.TemplateFile, path)
-			if err != nil {
-				return err
-			}
-
-			logger.Debug("Template file", zap.String("template_file", relPath))
-			tmpl := LoadTemplate(path)
-			if tmpl == nil {
-				logger.Error("Error loading template", zap.String("path", path))
-				return errors.New("Error loading template")
-			}
-
-			newRelPath := transformFileName(relPath, options)
-			outputPath, err := filepath.Abs(filepath.Join(options.OutputFile, newRelPath))
-			if err != nil {
-				logger.Error("Could not determine absolute path of output file", zap.String("output_file", options.OutputFile), zap.String("new_rel_path", newRelPath))
-				return errors.New("Error determining output path")
-			}
-
-			templates[outputPath] = tmpl
-			inputMaps[outputPath] = path
-			return nil
-		})
-		if err != nil {
-			logger.Error("Error while walking input directory path", zap.String("template_file", options.TemplateFile))
-			return 1
-		}
-	} else {
-		// Just load the template as the output file
-		tmpl := LoadTemplate(options.TemplateFile)
-		if tmpl == nil {
-			logger.Error("Error loading template:", zap.String("template_file", options.TemplateFile))
-			return 1
-		}
-
-		absOutputFile := ""
-		if options.OutputFile != "" {
-			absOutputFile, err = filepath.Abs(options.OutputFile)
-			if err != nil {
-				logger.Error("Could not determine absolute path of output file", zap.Error(err))
-				return 1
-			}
-		}
-
-		templates[absOutputFile] = tmpl
-	}
-
-	// If we're in directory mode then we'll create a directory tree. If we're not, then we won't.
-	if options.DirectoryMode {
-		for outputPath := range templates {
-			if err := os.MkdirAll(filepath.Dir(outputPath), os.FileMode(0777)); err != nil {
-				logger.Error("Error while creating directory for output")
-			}
-		}
-	}
 
 	rootDir := options.OutputFile
 	if !options.DirectoryMode {
@@ -475,15 +425,116 @@ func Entrypoint(args EntrypointArgs) int {
 		return 1
 	}
 
+	//nolint:nestif
+	if options.DirectoryMode {
+		err := filepath.Walk(options.TemplateFile, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				logger.Error("Error walking directory tree", zap.Error(err))
+				return err
+			}
+
+			if info.IsDir() {
+				return nil
+			}
+
+			relPath, err := filepath.Rel(options.TemplateFile, path)
+			if err != nil {
+				return errors.Wrap(err, "DirectoryMode")
+			}
+
+			logger.Debug("Template file", zap.String("template_file", relPath))
+			tmpl := templating.LoadTemplate(path)
+			if tmpl == nil {
+				logger.Error("Error loading template", zap.String("path", path))
+				return errors.New("Error loading template")
+			}
+
+			newRelPath := transformFileName(relPath, options)
+			outputPath, err := filepath.Abs(filepath.Join(options.OutputFile, newRelPath))
+			if err != nil {
+				logger.Error("Could not determine absolute path of output file", zap.String("output_file", options.OutputFile), zap.String("new_rel_path", newRelPath))
+				return errors.New("Error determining output path")
+			}
+
+			p2cliCtx := make(map[string]string)
+			// Set the global p2 variables on the template sets
+			p2cliCtx["OutputPath"] = outputPath
+			p2cliCtx["OutputName"] = filepath.Base(outputPath)
+			p2cliCtx["OutputDir"] = filepath.Dir(outputPath)
+			p2cliCtx["OutputRelPath"], err = filepath.Rel(rootDir, outputPath)
+			if err != nil {
+				return fmt.Errorf("could not determine relative output path: %w", err)
+			}
+			p2cliCtx["OutputRelDir"], err = filepath.Rel(rootDir, filepath.Dir(outputPath))
+			if err != nil {
+				return fmt.Errorf("could not determine relative output dir: %w", err)
+			}
+
+			ctx := make(pongo2.Context)
+			ctx["p2"] = p2cliCtx
+			templateSet := pongo2.NewSet(outputPath, pongo2.DefaultLoader)
+			templateSet.Globals.Update(ctx)
+
+			templates[outputPath] = tmpl
+			inputMaps[outputPath] = path
+			return nil
+		})
+		if err != nil {
+			logger.Error("Error while walking input directory path", zap.String("template_file", options.TemplateFile))
+			return 1
+		}
+	} else {
+		// Just load the template as the output file
+		tmpl := templating.LoadTemplate(options.TemplateFile)
+		if tmpl == nil {
+			logger.Error("Error loading template:", zap.String("template_file", options.TemplateFile))
+			return 1
+		}
+
+		outputPath := ""
+		if options.OutputFile != "" {
+			outputPath, err = filepath.Abs(options.OutputFile)
+			if err != nil {
+				logger.Error("Could not determine absolute path of output file", zap.Error(err))
+				return 1
+			}
+		}
+
+		p2cliCtx := make(map[string]string)
+		p2cliCtx["OutputPath"] = templating.StdOutVal
+		p2cliCtx["OutputName"] = templating.StdOutVal
+		p2cliCtx["OutputDir"] = rootDir
+		p2cliCtx["OutputRelPath"] = templating.StdOutVal
+		p2cliCtx["OutputRelDir"] = "."
+
+		ctx := make(pongo2.Context)
+		ctx["p2"] = p2cliCtx
+
+		tmpl.TemplateSet.Globals.Update(ctx)
+
+		ctx["p2"] = p2cliCtx
+
+		templates[outputPath] = tmpl
+		inputMaps[outputPath] = templating.StdOutVal
+	}
+
+	// If we're in directory mode then we'll create a directory tree. If we're not, then we won't.
+	if options.DirectoryMode {
+		for outputPath := range templates {
+			if err := os.MkdirAll(filepath.Dir(outputPath), os.FileMode(fileconsts.OS_ALL_RWX)); err != nil {
+				logger.Error("Error while creating directory for output")
+			}
+		}
+	}
+
 	templateEngine := templating.TemplateEngine{StdOut: args.StdOut}
 
 	failed := false
 	for outputPath, tmpl := range templates {
-		if err := templateEngine.ExecuteTemplate(tmpl, inputData, outputPath, rootDir); err != nil {
+		if err := templateEngine.ExecuteTemplate(&filterSet, tmpl, inputData, outputPath); err != nil {
 			logger.Error("Failed to execute template", zap.Error(err), zap.String("template_path", inputMaps[outputPath]), zap.String("output_path", outputPath))
 			failed = true
 		}
-
 	}
 
 	if failed {
@@ -494,30 +545,10 @@ func Entrypoint(args EntrypointArgs) int {
 	return 0
 }
 
-func LoadTemplate(templatePath string) *pongo2.Template {
-	logger := zap.L()
-	// Load template
-	templateBytes, err := ioutil.ReadFile(templatePath)
-	if err != nil {
-		logger.Error("Could not read template file", zap.Error(err))
-		return nil
-	}
-
-	templateString := string(templateBytes)
-
-	tmpl, err := pongo2.FromString(templateString)
-	if err != nil {
-		logger.Error("Could not template file", zap.Error(err), zap.String("template", templatePath))
-		return nil
-	}
-
-	return tmpl
-}
-
 // transformFileName applies modifications specified by the user to the resulting output filename
 // This function is only invoked in Directory Mode.
 func transformFileName(relPath string, options Options) string {
 	filename := filepath.Base(relPath)
-	transformedFileName := strings.Replace(filename, options.FilenameSubstrDel, "", -1)
+	transformedFileName := strings.ReplaceAll(filename, options.FilenameSubstrDel, "")
 	return filepath.Join(filepath.Dir(relPath), transformedFileName)
 }

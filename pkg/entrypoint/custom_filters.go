@@ -1,9 +1,12 @@
 package entrypoint
 
 import (
-	"errors"
 	"fmt"
 	"os"
+
+	"github.com/wrouesnel/p2cli/pkg/templating"
+
+	"github.com/wrouesnel/p2cli/pkg/fileconsts"
 
 	"github.com/flosch/pongo2/v4"
 )
@@ -15,19 +18,13 @@ func filterNoopPassthru(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *
 	return in, nil
 }
 
-// This noop filter is registered in place of custom filters which otherwise
-// produce no output.
-func filterNoop(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
-	return nil, nil
-}
-
 // This filter writes the content of its input to the filename specified as its
 // argument. The templated content is returned verbatim.
 func filterWriteFile(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
 	if !in.IsString() {
 		return nil, &pongo2.Error{
 			Sender:    "filter:write_file",
-			OrigError: errors.New("Filter input must be of type 'string'."),
+			OrigError: templating.FilterError{Reason: "Filter input must be of type 'string'."},
 		}
 		//return nil, &pongo2.Error{
 		//	Sender:   "filter:write_file",
@@ -38,7 +35,7 @@ func filterWriteFile(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pon
 	if !param.IsString() {
 		return nil, &pongo2.Error{
 			Sender:    "filter:write_file",
-			OrigError: errors.New("Filter parameter must be of type 'string'."),
+			OrigError: templating.FilterError{Reason: "Filter parameter must be of type 'string'."},
 		}
 		//return nil, &pongo2.Error{
 		//	Sender:   "filter:write_file",
@@ -46,7 +43,7 @@ func filterWriteFile(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pon
 		//}
 	}
 
-	f, err := os.OpenFile(param.String(), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.FileMode(0777))
+	f, err := os.OpenFile(param.String(), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.FileMode(fileconsts.OS_ALL_RWX))
 	if err != nil {
 		return nil, &pongo2.Error{
 			Sender:   "filter:write_file",
@@ -63,7 +60,7 @@ func filterWriteFile(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pon
 	if werr != nil {
 		return nil, &pongo2.Error{
 			Sender:    "filter:write_file",
-			OrigError: fmt.Errorf("Could not write file for output: %s", werr.Error()),
+			OrigError: fmt.Errorf("could not write file for output: %w", werr),
 		}
 		//return nil, &pongo2.Error{
 		//	Sender:   "filter:write_file",
@@ -80,7 +77,7 @@ func filterMakeDirs(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pong
 	if !param.IsString() {
 		return nil, &pongo2.Error{
 			Sender:    "filter:make_dirs",
-			OrigError: errors.New("Filter parameter must be of type 'string'."),
+			OrigError: templating.FilterError{Reason: "filter parameter must be of type 'string'."},
 		}
 		//return nil, &pongo2.Error{
 		//	Sender:   "filter:make_dirs",
@@ -88,11 +85,11 @@ func filterMakeDirs(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pong
 		//}
 	}
 
-	err := os.MkdirAll(param.String(), os.FileMode(0777))
+	err := os.MkdirAll(param.String(), os.FileMode(fileconsts.OS_ALL_RWX))
 	if err != nil {
 		return nil, &pongo2.Error{
 			Sender:    "filter:make_dirs",
-			OrigError: fmt.Errorf("Could not create directories: %s %s", in.String(), err.Error()),
+			OrigError: fmt.Errorf("could not create directories: %s %w", in.String(), err),
 		}
 		//return nil, &pongo2.Error{
 		//	Sender:   "filter:make_dirs",

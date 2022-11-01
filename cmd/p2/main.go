@@ -11,7 +11,7 @@ import (
 func main() {
 	env := lo.Must(envutil.FromEnvironment(os.Environ()))
 
-	args := entrypoint.EntrypointArgs{
+	args := entrypoint.LaunchArgs{
 		StdIn:  os.Stdin,
 		StdOut: os.Stdout,
 		StdErr: os.Stderr,

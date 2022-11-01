@@ -46,18 +46,13 @@ func (s *p2Integration) TestInputDataProducesIdenticalOutput(c *C) {
 	const templateFile string = "tests/data.p2"
 	expectedOutput := MustReadFile("tests/data.out")
 
-	type tData struct {
-		InputFile          string // Test input file
-		ExpectedOutputFile string // Expected output file
-	}
-
 	testDatas := []string{
 		"tests/data.env",
 		"tests/data.json",
 		"tests/data.yml",
 	}
 
-	entrypointArgs := entrypoint.EntrypointArgs{
+	entrypointArgs := entrypoint.LaunchArgs{
 		StdIn:  os.Stdin,
 		StdOut: os.Stdout,
 		StdErr: os.Stderr,
@@ -105,7 +100,7 @@ func (s *p2Integration) TestInputDataProducesIdenticalOutput(c *C) {
 }
 
 func (s *p2Integration) TestOnNoTemplateExitFail(c *C) {
-	entrypointArgs := entrypoint.EntrypointArgs{
+	entrypointArgs := entrypoint.LaunchArgs{
 		StdIn:  os.Stdin,
 		StdOut: os.Stdout,
 		StdErr: os.Stderr,
@@ -125,11 +120,6 @@ func (s *p2Integration) TestIncludingEnvironmentVariablsOverridesDataVariables(c
 	const templateFile string = "tests/data.p2"
 	expectedOutput := MustReadFile("tests/data.out")
 
-	type tData struct {
-		InputFile          string // Test input file
-		ExpectedOutputFile string // Expected output file
-	}
-
 	testDatas := []string{
 		"tests/data.env",
 		"tests/data.json",
@@ -140,7 +130,7 @@ func (s *p2Integration) TestIncludingEnvironmentVariablsOverridesDataVariables(c
 		var exit int
 		fileTofileOutput := fmt.Sprintf("%s.1.test", td)
 
-		entrypointArgs := entrypoint.EntrypointArgs{
+		entrypointArgs := entrypoint.LaunchArgs{
 			StdIn:  os.Stdin,
 			StdOut: os.Stdout,
 			StdErr: os.Stderr,
@@ -185,7 +175,7 @@ func (s *p2Integration) TestDebugCommandLineOptionsWork(c *C) {
 		"tests/data.yml",
 	}
 
-	entrypointArgs := entrypoint.EntrypointArgs{
+	entrypointArgs := entrypoint.LaunchArgs{
 		StdIn:  os.Stdin,
 		StdOut: os.Stdout,
 		StdErr: os.Stderr,
@@ -207,10 +197,10 @@ func (s *p2Integration) TestIndentFilter(c *C) {
 		const emptyData string = "tests/data.indent.json"
 
 		// This test uses the write_file filter to produce its output.
-		outputFile := fmt.Sprintf("tests/data.indent.test")
+		const outputFile string = "tests/data.indent.test"
 		const expectedFile string = "tests/data.indent.out"
 
-		entrypointArgs := entrypoint.EntrypointArgs{
+		entrypointArgs := entrypoint.LaunchArgs{
 			StdIn:  os.Stdin,
 			StdOut: os.Stdout,
 			StdErr: os.Stderr,
@@ -229,10 +219,10 @@ func (s *p2Integration) TestStructuredFilters(c *C) {
 	const emptyData string = "tests/data.structured.json"
 
 	// This test uses the write_file filter to produce its output.
-	outputFile := fmt.Sprintf("tests/data.structured.test")
+	const outputFile string = "tests/data.structured.test"
 	const expectedFile string = "tests/data.structured.out"
 
-	entrypointArgs := entrypoint.EntrypointArgs{
+	entrypointArgs := entrypoint.LaunchArgs{
 		StdIn:  os.Stdin,
 		StdOut: os.Stdout,
 		StdErr: os.Stderr,
@@ -250,9 +240,9 @@ func (s *p2Integration) TestBase64Filters(c *C) {
 	const emptyData string = "tests/data.base64.json"
 
 	// This test uses the write_file filter to produce its output.
-	outputFile := fmt.Sprintf("tests/data.base64.test")
+	const outputFile string = "tests/data.base64.test"
 	const expectedFile string = "tests/data.base64.out"
-	entrypointArgs := entrypoint.EntrypointArgs{
+	entrypointArgs := entrypoint.LaunchArgs{
 		StdIn:  os.Stdin,
 		StdOut: os.Stdout,
 		StdErr: os.Stderr,
@@ -269,9 +259,9 @@ func (s *p2Integration) TestStringFilters(c *C) {
 	const emptyData string = "tests/data.string_filters.json"
 
 	// This test uses the write_file filter to produce its output.
-	outputFile := fmt.Sprintf("tests/data.string_filters.test")
+	const outputFile string = "tests/data.string_filters.test"
 	const expectedFile string = "tests/data.string_filters.out"
-	entrypointArgs := entrypoint.EntrypointArgs{
+	entrypointArgs := entrypoint.LaunchArgs{
 		StdIn:  os.Stdin,
 		StdOut: os.Stdout,
 		StdErr: os.Stderr,
@@ -288,9 +278,9 @@ func (s *p2Integration) TestGzipFilters(c *C) {
 	const emptyData string = "tests/data.gzip.json"
 
 	// This test uses the write_file filter to produce its output.
-	outputFile := fmt.Sprintf("tests/data.gzip.test")
+	const outputFile string = "tests/data.gzip.test"
 	const expectedFile string = "tests/data.gzip.out"
-	entrypointArgs := entrypoint.EntrypointArgs{
+	entrypointArgs := entrypoint.LaunchArgs{
 		StdIn:  os.Stdin,
 		StdOut: os.Stdout,
 		StdErr: os.Stderr,
@@ -308,9 +298,9 @@ func (s *p2Integration) TestCustomFilters(c *C) {
 		const emptyData string = "tests/data.write_file.json"
 
 		// This test uses the write_file filter to produce its output.
-		outputFile := fmt.Sprintf("tests/data.write_file.test")
+		const outputFile string = "tests/data.write_file.test"
 		const expectedFile string = "tests/data.write_file.out"
-		entrypointArgs := entrypoint.EntrypointArgs{
+		entrypointArgs := entrypoint.LaunchArgs{
 			StdIn:  os.Stdin,
 			StdOut: os.Stdout,
 			StdErr: os.Stderr,
@@ -328,9 +318,9 @@ func (s *p2Integration) TestCustomFilters(c *C) {
 		const emptyData string = "tests/data.make_dirs.json"
 
 		// This test uses the write_file filter to produce its output.
-		outputFile := fmt.Sprintf("tests/data.make_dirs.test")
+		const outputFile string = "tests/data.make_dirs.test"
 		const expectedFile string = "tests/data.make_dirs.out"
-		entrypointArgs := entrypoint.EntrypointArgs{
+		entrypointArgs := entrypoint.LaunchArgs{
 			StdIn:  os.Stdin,
 			StdOut: os.Stdout,
 			StdErr: os.Stderr,
@@ -351,7 +341,7 @@ func (s *p2Integration) TestCustomFilters(c *C) {
 }
 
 func (s *p2Integration) TestDirectoryMode(c *C) {
-	entrypointArgs := entrypoint.EntrypointArgs{
+	entrypointArgs := entrypoint.LaunchArgs{
 		StdIn:  os.Stdin,
 		StdOut: os.Stdout,
 		StdErr: os.Stderr,
@@ -367,7 +357,7 @@ func (s *p2Integration) TestDirectoryMode(c *C) {
 func (s *p2Integration) TestFilenameSubstringDeleteForDirectoryMode(c *C) {
 	testOutputDir := c.MkDir()
 
-	entrypointArgs := entrypoint.EntrypointArgs{
+	entrypointArgs := entrypoint.LaunchArgs{
 		StdIn:  os.Stdin,
 		StdOut: os.Stdout,
 		StdErr: os.Stderr,
@@ -382,7 +372,7 @@ func (s *p2Integration) TestFilenameSubstringDeleteForDirectoryMode(c *C) {
 	// Check output file exists
 	expectedFilePath := path.Join(testOutputDir, "dir1/template1.txt")
 	if _, err := os.Stat(expectedFilePath); err != nil {
-		fmt.Printf("Expected file: %s does not exist\n", expectedFilePath)
+		c.Logf("Expected file: %s does not exist\n", expectedFilePath)
 		c.Fail()
 	}
 }
@@ -390,7 +380,7 @@ func (s *p2Integration) TestFilenameSubstringDeleteForDirectoryMode(c *C) {
 // TestInvalidEnvironmentVariables tests that invalid environment variables in the input still allow the the template
 // to be generated successfully.
 func (s *p2Integration) TestInvalidEnvironmentVariables(c *C) {
-	entrypointArgs := entrypoint.EntrypointArgs{
+	entrypointArgs := entrypoint.LaunchArgs{
 		StdIn:  os.Stdin,
 		StdOut: os.Stdout,
 		StdErr: os.Stderr,

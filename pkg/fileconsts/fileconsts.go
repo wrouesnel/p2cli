@@ -1,5 +1,6 @@
-package pkg
+package fileconsts
 
+//nolint:revive,stylecheck
 const (
 	OS_READ        = 04
 	OS_WRITE       = 02
@@ -30,5 +31,5 @@ const (
 	OS_ALL_W   = OS_USER_W | OS_GROUP_W | OS_OTH_W
 	OS_ALL_X   = OS_USER_X | OS_GROUP_X | OS_OTH_X
 	OS_ALL_RW  = OS_ALL_R | OS_ALL_W
-	OS_ALL_RWX = OS_ALL_RW | OS_GROUP_X
+	OS_ALL_RWX = OS_ALL_RW | OS_ALL_X
 )
