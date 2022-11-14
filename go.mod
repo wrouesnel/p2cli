@@ -10,7 +10,7 @@ require (
 )
 
 require (
-	github.com/alecthomas/kong v0.7.0
+	github.com/alecthomas/kong v0.7.1
 	github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/magefile/mage v1.14.0
