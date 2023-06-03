@@ -1,9 +1,9 @@
 package templating
 
 import (
-	"io/ioutil"
+	"os"
 
-	"github.com/flosch/pongo2/v4"
+	"github.com/flosch/pongo2/v6"
 	"go.uber.org/zap"
 )
 
@@ -15,7 +15,7 @@ type LoadedTemplate struct {
 func LoadTemplate(templatePath string) *LoadedTemplate {
 	logger := zap.L()
 	// Load template
-	templateBytes, err := ioutil.ReadFile(templatePath)
+	templateBytes, err := os.ReadFile(templatePath)
 	if err != nil {
 		logger.Error("Could not read template file", zap.Error(err))
 		return nil

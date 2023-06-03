@@ -10,7 +10,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math/bits"
 	"os"
 	"os/exec"
@@ -79,6 +78,8 @@ var binRootName = func() string {
 }()
 
 // dockerImageName is set to the name of the directory by default.
+//
+//nolint:unused,varcheck
 var dockerImageName = func() string {
 	return binRootName
 }()
@@ -168,7 +169,7 @@ var goCmds []string
 
 // Function to calculate the version symbol
 var versionSymbol = func() string {
-	gomodBytes := lo.Must(ioutil.ReadFile("go.mod"))
+	gomodBytes := lo.Must(os.ReadFile("go.mod"))
 	parsedGoMod := lo.Must(modfile.ParseLax("go.mod", gomodBytes, nil))
 	return fmt.Sprintf("%s/version.Version", parsedGoMod.Module.Mod.Path)
 }
@@ -384,7 +385,7 @@ func init() {
 	goCmds = func() []string {
 		results := []string{}
 
-		finfos, err := ioutil.ReadDir(cmdDir)
+		finfos, err := os.ReadDir(cmdDir)
 		if err != nil {
 			panic(err)
 		}
@@ -479,7 +480,7 @@ func Tools() (err error) {
 
 	// golangci-lint don't want to support if it's not a binary release, so
 	// don't go-install.
-	if berr := toolBuild("static", []string{"", "github.com/golangci/golangci-lint/cmd/golangci-lint@v1.48.0"},
+	if berr := toolBuild("static", []string{"", "github.com/golangci/golangci-lint/cmd/golangci-lint@v1.53.1"},
 		[]string{"gocovmerge", "github.com/wadey/gocovmerge@latest"}); berr != nil {
 		return berr
 	}
@@ -563,9 +564,9 @@ func LintersBisect() error {
 	// Annoyingly, we have to override .golangci.yml to allow us to pick linters
 	// one by one.
 	golangCi := make(map[string]interface{})
-	_ = yaml.Unmarshal(must(ioutil.ReadFile(".golangci.yml")), golangCi)
+	_ = yaml.Unmarshal(must(os.ReadFile(".golangci.yml")), golangCi)
 	delete(golangCi, "linters")
-	tempConfig, err := ioutil.TempFile("", ".golangci.*.yml")
+	tempConfig, err := os.CreateTemp("", ".golangci.*.yml")
 	if err != nil {
 		return errors.Wrap(err, "LintersBisect: TempFile failed")
 	}
@@ -597,7 +598,7 @@ func LintersBisect() error {
 // fmt runs golangci-lint with the formatter options.
 func formattingLinter(doFixes bool) error {
 	mg.Deps(Tools)
-	args := []string{"run", "--no-config", "--disable-all", "--enable=gofmt", "--enable=goimports", "--enable=godot"}
+	args := []string{"run", "--no-config", "--disable-all", "--enable=gofmt", "--enable=goimports", "--enable=godot", "--enable=tagalign"}
 	if doFixes {
 		args = append(args, "--fix")
 	}
@@ -616,7 +617,7 @@ func Fmt() error {
 
 func listCoverageFiles() ([]string, error) {
 	result := []string{}
-	finfos, derr := ioutil.ReadDir(coverageDir)
+	finfos, derr := os.ReadDir(coverageDir)
 	if derr != nil {
 		return result, derr
 	}
@@ -674,10 +675,11 @@ func Coverage() error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(constCoverFile, []byte(mergedCoverage), os.FileMode(0777))
+	return os.WriteFile(constCoverFile, []byte(mergedCoverage), os.FileMode(0777))
 }
 
 // All runs a full suite suitable for CI
+//
 //nolint:unparam
 func All() error {
 	mg.SerialDeps(Style, Lint, Test, Coverage, Release)
@@ -685,6 +687,7 @@ func All() error {
 }
 
 // GithubReleaseMatrix emits a line to setup build matrix jobs for release builds.
+//
 //nolint:unparam
 func GithubReleaseMatrix() error {
 	output := make([]string, 0, len(platforms))
@@ -765,6 +768,7 @@ func Binary() error {
 }
 
 // doReleaseBin handles the deferred building of an actual release binary.
+//
 //nolint:gocritic
 func doReleaseBin(OSArch string) func() error {
 	platform, ok := platformsLookup[OSArch]
@@ -782,6 +786,7 @@ func doReleaseBin(OSArch string) func() error {
 }
 
 // ReleaseBin builds cross-platform release binaries under the bin/ directory.
+//
 //nolint:gocritic
 func ReleaseBin(OSArch string) error {
 	return doReleaseBin(OSArch)()
@@ -798,6 +803,7 @@ func ReleaseBinAll() error {
 }
 
 // Release builds release archives under the release/ directory.
+//
 //nolint:gocritic
 func doRelease(OSArch string) func() error {
 	platform, ok := platformsLookup[OSArch]
@@ -853,6 +859,7 @@ func PlatformTargets() error {
 }
 
 // Release a binary archive for a specific platform
+//
 //nolint:gocritic
 func Release(OSArch string) error {
 	return doRelease(OSArch)()
@@ -885,6 +892,7 @@ func Clean() error {
 }
 
 // Debug prints the value of internal state variables
+//
 //nolint:unparam
 func Debug() error {
 	fmt.Println("Source Files:", goSrc)
@@ -904,7 +912,7 @@ func Debug() error {
 func Autogen() error {
 	fmt.Println("Installing git hooks in local repository...")
 
-	for _, fname := range must(ioutil.ReadDir(gitHookDir)) {
+	for _, fname := range must(os.ReadDir(gitHookDir)) {
 		hookName := fname.Name()
 		if !fname.IsDir() {
 			continue
@@ -914,7 +922,7 @@ func Autogen() error {
 		repoHookPath := path.Join(gitHookDir, fname.Name())
 
 		scripts := []string{}
-		for _, scriptName := range must(ioutil.ReadDir(repoHookPath)) {
+		for _, scriptName := range must(os.ReadDir(repoHookPath)) {
 			if scriptName.IsDir() {
 				continue
 			}
@@ -923,7 +931,7 @@ func Autogen() error {
 
 			scripts = append(scripts, relHookPath)
 
-			data, err := ioutil.ReadFile(gitHookPath)
+			data, err := os.ReadFile(gitHookPath)
 			if err != nil {
 				data = []byte("#!/bin/bash\n")
 			}
@@ -974,7 +982,7 @@ func Autogen() error {
 			updatedScript = append(updatedScript, scriptPackage...)
 			updatedScript = append(updatedScript, splitHook[tailAt:]...)
 
-			err = ioutil.WriteFile(gitHookPath, []byte(strings.Join(updatedScript, "\n")),
+			err = os.WriteFile(gitHookPath, []byte(strings.Join(updatedScript, "\n")),
 				os.FileMode(0755))
 			if err != nil {
 				return err

@@ -3,7 +3,7 @@ package templating
 import (
 	"io"
 
-	"github.com/flosch/pongo2/v4"
+	"github.com/flosch/pongo2/v6"
 	"github.com/pkg/errors"
 )
 
