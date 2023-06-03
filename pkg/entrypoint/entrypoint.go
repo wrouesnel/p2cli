@@ -23,12 +23,11 @@ import (
 	"time"
 
 	"github.com/wrouesnel/p2cli/pkg/fileconsts"
-
-	"github.com/pkg/errors"
 	"github.com/wrouesnel/p2cli/version"
 
 	"github.com/alecthomas/kong"
 	"github.com/flosch/pongo2/v6"
+	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"github.com/wrouesnel/p2cli/pkg/errdefs"
 
@@ -108,7 +107,7 @@ type Options struct {
 	DirectoryMode     bool   `help:"Treat template path as directory-tree, output path as target directory"`
 	FilenameSubstrDel string `help:"Delete a given substring in the output filename (only applies to --directory-mode)" name:"directory-mode-filename-substr-del"`
 
-	Version bool `help:"Print the version and exit"`
+	Version kong.VersionFlag `help:"Print the version and exit"`
 }
 
 // CustomFilterSpec is a map of custom filters p2 implements. These are gated
@@ -178,7 +177,9 @@ func Entrypoint(args LaunchArgs) int {
 	})
 
 	// Command line parsing can now happen
-	parser := lo.Must(kong.New(&options, kong.Description(version.Description)))
+	parser := lo.Must(kong.New(&options, kong.Description(version.Description), kong.Vars{
+		"version": version.Version,
+	}))
 	_, err = parser.Parse(args.Args)
 	if err != nil {
 		_, _ = fmt.Fprintf(args.StdErr, "Argument error: %s", err.Error())
@@ -204,11 +205,6 @@ func Entrypoint(args LaunchArgs) int {
 
 	// Install as the global logger
 	zap.ReplaceGlobals(logger)
-
-	if options.Version {
-		lo.Must(fmt.Fprintf(args.StdOut, "%s", version.Version))
-		return 0
-	}
 
 	//nolint:nestif
 	if options.DirectoryMode {
