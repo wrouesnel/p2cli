@@ -15,7 +15,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -29,7 +28,7 @@ import (
 	"github.com/wrouesnel/p2cli/version"
 
 	"github.com/alecthomas/kong"
-	"github.com/flosch/pongo2/v4"
+	"github.com/flosch/pongo2/v6"
 	"github.com/samber/lo"
 	"github.com/wrouesnel/p2cli/pkg/errdefs"
 
@@ -86,28 +85,28 @@ const (
 
 type Options struct {
 	Logging struct {
-		Level  string `help:"logging level" default:"warning"`
-		Format string `help:"logging format (${enum})" enum:"console,json" default:"console"`
+		Level  string `default:"warning" help:"logging level"`
+		Format string `default:"console" enum:"console,json"  help:"logging format (${enum})"`
 	} `embed:"" prefix:"logging."`
 
-	DumpInputData bool `name:"debug" help:"Print Go serialization to stderr and then exit"`
+	DumpInputData bool `help:"Print Go serialization to stderr and then exit" name:"debug"`
 
 	UseEnvKey    bool   `help:"Treat --input as an environment key name to read. This is equivalent to specifying --format=envkey"`
-	Format       string `help:"Input data format (may specify multiple values)" enum:"auto,env,envkey,json,yml,yaml" default:"auto" short:"f"`
+	Format       string `default:"auto"                                                                                            enum:"auto,env,envkey,json,yml,yaml" help:"Input data format (may specify multiple values)" short:"f"`
 	IncludeEnv   bool   `help:"Implicitly include environment variables in addition to any supplied data"`
-	TemplateFile string `name:"template" help:"Template file to process" short:"t" required:""`
-	DataFile     string `name:"input" help:"Input data path. Leave blank for stdin." short:"i"`
-	OutputFile   string `name:"output" help:"Output file. Leave blank for stdout." short:"o"`
+	TemplateFile string `help:"Template file to process"                                                                           name:"template"                      required:""                                            short:"t"`
+	DataFile     string `help:"Input data path. Leave blank for stdin."                                                            name:"input"                         short:"i"`
+	OutputFile   string `help:"Output file. Leave blank for stdout."                                                               name:"output"                        short:"o"`
 
-	TarFile string `name:"tar" help:"Output content as a tar file with the given name or to stdout (-)" default:""`
+	TarFile string `default:"" help:"Output content as a tar file with the given name or to stdout (-)" name:"tar"`
 
-	CustomFilters     string `name:"enable-filters" help:"Enable custom P2 filters"`
-	CustomFilterNoops bool   `name:"enable-noop-filters" help:"Enable all custom filters in no-op mode. Supercedes --enable-filters."`
+	CustomFilters     string `help:"Enable custom P2 filters"                                              name:"enable-filters"`
+	CustomFilterNoops bool   `help:"Enable all custom filters in no-op mode. Supercedes --enable-filters." name:"enable-noop-filters"`
 
 	Autoescape bool `help:"Enable autoescaping"`
 
 	DirectoryMode     bool   `help:"Treat template path as directory-tree, output path as target directory"`
-	FilenameSubstrDel string `name:"directory-mode-filename-substr-del" help:"Delete a given substring in the output filename (only applies to --directory-mode)"`
+	FilenameSubstrDel string `help:"Delete a given substring in the output filename (only applies to --directory-mode)" name:"directory-mode-filename-substr-del"`
 
 	Version bool `help:"Print the version and exit"`
 }
@@ -136,10 +135,10 @@ func readRawInput(env map[string]string, stdIn io.Reader, name string, source Da
 	case SourceStdin:
 		// Read from stdin
 		name = "-"
-		data, err = ioutil.ReadAll(stdIn)
+		data, err = io.ReadAll(stdIn)
 	case SourceFile:
 		// Read from file
-		data, err = ioutil.ReadFile(name)
+		data, err = os.ReadFile(name)
 	case SourceEnvKey:
 		// Read from environment key
 		data = []byte(env[name])
@@ -165,6 +164,7 @@ type LaunchArgs struct {
 
 // Entrypoint implements the actual functionality of the program so it can be called inline from testing.
 // env is normally passed the environment variable array.
+//
 //nolint:funlen,gocognit,gocyclo,cyclop,maintidx
 func Entrypoint(args LaunchArgs) int {
 	var err error

@@ -8,7 +8,7 @@ import (
 
 	"github.com/wrouesnel/p2cli/pkg/fileconsts"
 
-	"github.com/flosch/pongo2/v4"
+	"github.com/flosch/pongo2/v6"
 )
 
 // This noop filter is registered in place of custom filters which otherwise

@@ -8,15 +8,9 @@ output:
 linters:
   enable-all: true
   disable:
-    # Deprecated
-    - golint
-    - ireturn
-    - interfacer
-    - exhaustivestruct
-    - maligned
-    - scopelint
     # Doesn't work
     - promlinter
+    - revive # Revisit in future
     # Not used
     - paralleltest
     - nlreturn
@@ -25,6 +19,8 @@ linters:
     - gofumpt
     - gci
     - exhaustruct  # ultimately too noisy for most coding
+    - depguard
+    - dupword
     # This one is just infuriating, produces a lot of warnings, and doesn't matter.
     - godot
     # These all stopped working suddenly due to a non-existent compilation error.
@@ -39,7 +35,15 @@ linters:
     # Deprecated
     - nosnakecase # deprecated
     - ifshort # deprecated
-
+    - deadcode    # Considered abandoned by golangci-lint as of 1.53.x
+    - varcheck    # Considered abandoned by golangci-lint as of 1.53.x
+    - structcheck   # Considered abandoned by golangci-lint as of 1.53.x
+    - golint
+    - ireturn
+    - interfacer
+    - exhaustivestruct
+    - maligned
+    - scopelint
 issues:
   exclude-rules:
     - path: _test\.go

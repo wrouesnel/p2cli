@@ -6,13 +6,13 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/user"
 	"strconv"
 	"strings"
 
-	"github.com/flosch/pongo2/v4"
+	"github.com/flosch/pongo2/v6"
 	"github.com/pelletier/go-toml"
 	"gopkg.in/yaml.v2"
 )
@@ -381,7 +381,7 @@ func (fs *FilterSet) FilterFromGzip(in *pongo2.Value, param *pongo2.Value) (*pon
 		}
 	}
 
-	output, err := ioutil.ReadAll(rd)
+	output, err := io.ReadAll(rd)
 	if err != nil {
 		return nil, &pongo2.Error{
 			Sender:    "filter:from_gzip",

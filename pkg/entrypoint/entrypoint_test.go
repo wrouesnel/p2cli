@@ -4,7 +4,6 @@ import (
 	"archive/tar"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -27,7 +26,7 @@ type p2Integration struct{}
 var _ = Suite(&p2Integration{})
 
 func MustReadFile(filePath string) []byte {
-	testResult, err := ioutil.ReadFile(filePath)
+	testResult, err := os.ReadFile(filePath)
 	if err != nil {
 		panic(err)
 	}
