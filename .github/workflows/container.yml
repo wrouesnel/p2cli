@@ -10,7 +10,7 @@ on:
       - main
   push:
     tags:
-      - v*
+      - r*
 
 env:
   REGISTRY: ghcr.io
