@@ -16,7 +16,7 @@ require (
 	github.com/magefile/mage v1.15.0
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/pkg/errors v0.9.1
-	github.com/rogpeppe/go-internal v1.10.0
+	github.com/rogpeppe/go-internal v1.11.0
 	github.com/samber/lo v1.38.1
 	go.uber.org/zap v1.23.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -35,4 +35,5 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 // indirect
+	golang.org/x/mod v0.9.0 // indirect
 )
