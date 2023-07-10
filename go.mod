@@ -9,7 +9,7 @@ require (
 )
 
 require (
-	github.com/alecthomas/kong v0.7.0
+	github.com/alecthomas/kong v0.8.0
 	github.com/flosch/pongo2/v6 v6.0.0
 	github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
