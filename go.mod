@@ -18,7 +18,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/rogpeppe/go-internal v1.10.0
 	github.com/samber/lo v1.38.1
-	go.uber.org/zap v1.23.0
+	go.uber.org/zap v1.26.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -32,7 +32,6 @@ require (
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
 	github.com/ulikunitz/xz v0.5.11 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
-	go.uber.org/atomic v1.7.0 // indirect
-	go.uber.org/multierr v1.6.0 // indirect
+	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 // indirect
 )
