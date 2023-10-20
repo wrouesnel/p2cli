@@ -26,6 +26,7 @@ func FromEnvironment(env []string) (map[string]string, error) {
 				RawEnvVar: keyval,
 			})
 		}
+		results[splitKeyVal[0]] = splitKeyVal[1]
 	}
 
 	return results, nil
