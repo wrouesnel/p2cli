@@ -217,6 +217,29 @@ func (s *p2Integration) TestIndentFilter(c *C) {
 	}
 }
 
+func (s *p2Integration) TestReplaceFilter(c *C) {
+	{
+		const templateFile string = "tests/data.replace.p2"
+		const emptyData string = "tests/data.replace.json"
+
+		// This test uses the write_file filter to produce its output.
+		const outputFile string = "tests/data.replace.test"
+		const expectedFile string = "tests/data.replace.out"
+
+		entrypointArgs := entrypoint.LaunchArgs{
+			StdIn:  os.Stdin,
+			StdOut: os.Stdout,
+			StdErr: os.Stderr,
+			Env:    lo.Must(envutil.FromEnvironment(os.Environ())),
+			Args:   []string{"-t", templateFile, "-i", emptyData, "-o", outputFile},
+		}
+
+		exit := entrypoint.Entrypoint(entrypointArgs)
+		c.Assert(exit, Equals, 0, Commentf("Exit code for input %s != 0", emptyData))
+		c.Check(string(MustReadFile(outputFile)), DeepEquals, string(MustReadFile(expectedFile)))
+	}
+}
+
 func (s *p2Integration) TestStructuredFilters(c *C) {
 	const templateFile string = "tests/data.structured.p2"
 	const emptyData string = "tests/data.structured.json"

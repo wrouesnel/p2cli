@@ -1,0 +1,6 @@
+{
+  "value": "This will have the spaces removed",
+  "match": "This",
+  "replace": "Hello",
+  "count": 1
+}

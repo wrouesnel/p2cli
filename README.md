@@ -11,6 +11,11 @@ It is inspired (and pretty much a copy of) the j2cli utility for Python, but
 leveraging Golang's static compilation for easier use in Docker and other
 minimal environments.
 
+Note: We are currently updated to https://github.com/flosch/pongo2/commit/c84aecb5fa79a9c0feec284a7bf4f0536c6a6e99
+on the pongo2 main branch. This version notably introduces a new set variable 
+functionality which allows  implementing multi-parameter filters (used for 
+`replace`). Check out the docs over there for more info.
+
 ## Usage
 p2 defaults to using the local environment variables as a data source.
 
@@ -47,6 +52,8 @@ Render a template using values from Kubernetes
 #### Extra Built-In Filters
 
 * `indent` - output data with the given indent. Can be given either a string or number of spaces.
+* `replace` - replace strings. Usage: `{{ value | replace:["match", "replacement"] }}`. A third
+  parameter can also be supplied to set the number of replacements.
 * `to_json` - outputs structured data as JSON. Supplying a parameter sets the indent.
 * `to_yaml` - outputs structured data as YAML.
 * `to_toml` - outputs structured data as TOML. Must be supplied a map.

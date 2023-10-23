@@ -1,6 +1,6 @@
 /p2
 /p2-*
-/tests/*.test
+**/tests/*.test
 *.orig
 /cover.out
 /cover.*.out
@@ -12,4 +12,5 @@
 /.bin
 /.junit
 /bin
+/.coverage
 

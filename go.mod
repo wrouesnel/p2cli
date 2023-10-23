@@ -10,7 +10,7 @@ require (
 
 require (
 	github.com/alecthomas/kong v0.7.0
-	github.com/flosch/pongo2/v6 v6.0.0
+	github.com/flosch/pongo2/v6 v6.0.1-0.20230411124213-c84aecb5fa79
 	github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/magefile/mage v1.15.0
@@ -24,6 +24,7 @@ require (
 
 require (
 	github.com/dsnet/compress v0.0.1 // indirect
+	github.com/flosch/pongo2 v0.0.0-20200913210552-0d938eb266f3 // indirect
 	github.com/frankban/quicktest v1.14.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/kr/pretty v0.3.0 // indirect

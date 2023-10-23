@@ -1,0 +1,5 @@
+String Replace
+{{ value | replace:[" ", ""] }}
+
+String Replace with count
+{{ value | replace:[" ", "", 1] }}

@@ -257,6 +257,7 @@ func Entrypoint(args LaunchArgs) int {
 
 	// Standard suite of custom helpers
 	_ = pongo2.RegisterFilter("indent", filterSet.FilterIndent)
+	_ = pongo2.RegisterFilter("replace", filterSet.FilterReplace)
 
 	_ = pongo2.RegisterFilter("to_json", filterSet.FilterToJSON)
 	_ = pongo2.RegisterFilter("to_yaml", filterSet.FilterToYAML)

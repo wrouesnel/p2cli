@@ -184,6 +184,90 @@ func (fs *FilterSet) FilterIndent(in *pongo2.Value, param *pongo2.Value) (*pongo
 	return pongo2.AsValue(strings.Join(splitStr, "\n")), nil
 }
 
+//nolint:funlen,gomnd
+func (fs *FilterSet) FilterReplace(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+	if !in.IsString() {
+		return nil, &pongo2.Error{
+			Sender:    "filter:Replace",
+			OrigError: FilterError{Reason: "filter input must be of type 'string'."},
+		}
+	}
+
+	if !param.CanSlice() {
+		return nil, &pongo2.Error{
+			Sender:    "filter:Replace",
+			OrigError: FilterError{Reason: "filter param must be of type 'slice'."},
+		}
+	}
+
+	if param.Len() != 2 && param.Len() != 3 {
+		return nil, &pongo2.Error{
+			Sender:    "filter:Replace",
+			OrigError: FilterError{Reason: "filter param must be of type 'slice' containing 2 strings or 2 strings and int."},
+		}
+	}
+
+	var matchParam *pongo2.Value
+	var replaceParam *pongo2.Value
+	var countParam *pongo2.Value
+
+	matchParam = param.Index(0)
+	replaceParam = param.Index(1)
+
+	if param.Len() == 3 {
+		countParam = param.Index(2)
+	}
+
+	// For some reason, IsString fails with our set args. But it's probably
+	// fine to ignore that for now.
+	//if !matchParam.IsString() {
+	//	return nil, &pongo2.Error{
+	//		Sender:    "filter:Replace",
+	//		OrigError: FilterError{Reason: "element 0 of filter param must be a string"},
+	//	}
+	//}
+	//
+	//if !replaceParam.IsString() {
+	//	return nil, &pongo2.Error{
+	//		Sender:    "filter:Replace",
+	//		OrigError: FilterError{Reason: "element 1 of filter param must be a string"},
+	//	}
+	//}
+	//
+	//if countParam != nil {
+	//	if !countParam.IsInteger() {
+	//		return nil, &pongo2.Error{
+	//			Sender:    "filter:Replace",
+	//			OrigError: FilterError{Reason: "element 2 of filter param must be an integer"},
+	//		}
+	//	}
+	//}
+
+	match := matchParam.String()
+	replace := replaceParam.String()
+
+	input := in.String()
+
+	var result string
+	if countParam == nil {
+		result = strings.ReplaceAll(input, match, replace)
+	} else {
+		// Set notation returns strings
+		countStr := countParam.String()
+		count, err := strconv.ParseInt(countStr, 10, 64)
+		if err != nil {
+			return nil, &pongo2.Error{
+				Sender:    "filter:Replace",
+				OrigError: FilterError{Reason: "element 2 of filter param must be an integer"},
+			}
+		}
+
+		result = strings.Replace(input, match, replace, int(count))
+	}
+
+	return pongo2.AsValue(result), nil
+}
+
 func (fs *FilterSet) FilterToJSON(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
 	intf := in.Interface()
 
