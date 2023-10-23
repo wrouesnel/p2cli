@@ -107,6 +107,8 @@ type Options struct {
 	DirectoryMode     bool   `help:"Treat template path as directory-tree, output path as target directory"`
 	FilenameSubstrDel string `help:"Delete a given substring in the output filename (only applies to --directory-mode)" name:"directory-mode-filename-substr-del"`
 
+	InputRootKey string `help:"If specified, the input will be placed under a common subkey rather then in the root context. Use this when the input may contain invalid root context names."`
+
 	Version kong.VersionFlag `help:"Print the version and exit"`
 }
 
@@ -396,6 +398,12 @@ func Entrypoint(args LaunchArgs) int {
 		for k, v := range args.Env {
 			inputData[k] = v
 		}
+	}
+
+	if options.InputRootKey != "" {
+		oldInputData := inputData
+		inputData = make(map[string]interface{})
+		inputData[options.InputRootKey] = oldInputData
 	}
 
 	if options.DumpInputData {
