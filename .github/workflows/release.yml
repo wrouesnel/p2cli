@@ -15,7 +15,7 @@ jobs:
       release-matrix: ${{ steps.generate-matrix.outputs.release-matrix }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Go
         uses: actions/setup-go@v4
@@ -37,7 +37,7 @@ jobs:
       max-parallel: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Fetch tags
         run: git fetch --prune --unshallow --tags -f
