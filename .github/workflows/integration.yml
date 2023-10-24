@@ -35,7 +35,7 @@ jobs:
       - name: Lint
         run: go run mage.go lint
       - name: Publish Linter Reports
-        uses: mikepenz/action-junit-report@v3
+        uses: mikepenz/action-junit-report@v4
         if: always() # always run even if the previous step fails
         with:
           report_paths: '.junit/*.xml'
