@@ -15,12 +15,12 @@ jobs:
       release-matrix: ${{ steps.generate-matrix.outputs.release-matrix }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.20"
+          go-version: "1.23"
 
       - name: Generate Release Matrix
         id: generate-matrix
@@ -37,7 +37,7 @@ jobs:
       max-parallel: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Fetch tags
         run: git fetch --prune --unshallow --tags -f
@@ -45,7 +45,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.20"
+          go-version: "1.23"
 
       - name: Release Build
         run: go run mage.go release ${{ matrix.osarch }}

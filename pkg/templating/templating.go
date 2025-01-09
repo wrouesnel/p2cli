@@ -135,7 +135,7 @@ func (fs *FilterSet) FilterSetMode(in *pongo2.Value, param *pongo2.Value) (*pong
 	}
 
 	strmode := in.String()
-	intmode, err := strconv.ParseUint(strmode, 8, 64)
+	intmode, err := strconv.ParseUint(strmode, 8, 32)
 	if err != nil {
 		return nil, &pongo2.Error{
 			Sender:    "filter:SetMode",
@@ -184,7 +184,7 @@ func (fs *FilterSet) FilterIndent(in *pongo2.Value, param *pongo2.Value) (*pongo
 	return pongo2.AsValue(strings.Join(splitStr, "\n")), nil
 }
 
-//nolint:funlen,gomnd
+//nolint:mnd
 func (fs *FilterSet) FilterReplace(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
 	if !in.IsString() {
 		return nil, &pongo2.Error{
@@ -214,6 +214,7 @@ func (fs *FilterSet) FilterReplace(in *pongo2.Value, param *pongo2.Value) (*pong
 	matchParam = param.Index(0)
 	replaceParam = param.Index(1)
 
+	//nolint:mnd
 	if param.Len() == 3 {
 		countParam = param.Index(2)
 	}

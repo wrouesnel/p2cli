@@ -47,7 +47,7 @@ func filterWriteFile(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pon
 	if err != nil {
 		return nil, &pongo2.Error{
 			Sender:   "filter:write_file",
-			Filename: fmt.Sprintf("Could not open file for output: %s", err.Error()),
+			Filename: "Could not open file for output: " + err.Error(),
 		}
 		//return nil, &pongo2.Error{
 		//	Sender:   "filter:write_file",

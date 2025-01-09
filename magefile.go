@@ -33,8 +33,8 @@ import (
 	"github.com/integralist/go-findroot/find"
 	"github.com/pkg/errors"
 
-	"github.com/rogpeppe/go-internal/modfile"
 	"github.com/samber/lo"
+	"golang.org/x/mod/modfile"
 )
 
 var (
@@ -49,6 +49,40 @@ var curDir = func() string {
 	name, _ := os.Getwd()
 	return name
 }()
+
+//nolint:revive,stylecheck
+const (
+	OS_READ        = 04
+	OS_WRITE       = 02
+	OS_EX          = 01
+	OS_USER_SHIFT  = 6
+	OS_GROUP_SHIFT = 3
+	OS_OTH_SHIFT   = 0
+
+	OS_USER_R   = OS_READ << OS_USER_SHIFT
+	OS_USER_W   = OS_WRITE << OS_USER_SHIFT
+	OS_USER_X   = OS_EX << OS_USER_SHIFT
+	OS_USER_RW  = OS_USER_R | OS_USER_W
+	OS_USER_RWX = OS_USER_RW | OS_USER_X
+
+	OS_GROUP_R   = OS_READ << OS_GROUP_SHIFT
+	OS_GROUP_W   = OS_WRITE << OS_GROUP_SHIFT
+	OS_GROUP_X   = OS_EX << OS_GROUP_SHIFT
+	OS_GROUP_RW  = OS_GROUP_R | OS_GROUP_W
+	OS_GROUP_RWX = OS_GROUP_RW | OS_GROUP_X
+
+	OS_OTH_R   = OS_READ << OS_OTH_SHIFT
+	OS_OTH_W   = OS_WRITE << OS_OTH_SHIFT
+	OS_OTH_X   = OS_EX << OS_OTH_SHIFT
+	OS_OTH_RW  = OS_OTH_R | OS_OTH_W
+	OS_OTH_RWX = OS_OTH_RW | OS_OTH_X
+
+	OS_ALL_R   = OS_USER_R | OS_GROUP_R | OS_OTH_R
+	OS_ALL_W   = OS_USER_W | OS_GROUP_W | OS_OTH_W
+	OS_ALL_X   = OS_USER_X | OS_GROUP_X | OS_OTH_X
+	OS_ALL_RW  = OS_ALL_R | OS_ALL_W
+	OS_ALL_RWX = OS_ALL_RW | OS_ALL_X
+)
 
 const (
 	constCoverageDir = ".coverage"
@@ -171,7 +205,7 @@ var goCmds []string
 var versionSymbol = func() string {
 	gomodBytes := lo.Must(os.ReadFile("go.mod"))
 	parsedGoMod := lo.Must(modfile.ParseLax("go.mod", gomodBytes, nil))
-	return fmt.Sprintf("%s/version.Version", parsedGoMod.Module.Mod.Path)
+	return parsedGoMod.Module.Mod.Path + "/version.Version"
 }
 
 var version = func() string {
@@ -184,6 +218,7 @@ var version = func() string {
 		// Try and at least describe the git commit.
 		out, _ = sh.Output("git", "describe", "--dirty", "--always")
 		if out != "" {
+			//nolint:perfsprint
 			return fmt.Sprintf("v0.0.0-0-%s", out)
 		}
 		return "v0.0.0"
@@ -279,7 +314,7 @@ func waitResults(m map[string]func() error) func() error {
 	return func() error {
 		buildError := false
 
-		for i := 0; i < len(m); i++ {
+		for range len(m) {
 			result := <-resultQueue
 			if result.v != nil {
 				buildError = true
@@ -397,7 +432,7 @@ func init() {
 
 	// Ensure output dirs exist
 	for _, dir := range outputDirs {
-		panicOnError(os.MkdirAll(dir, os.FileMode(0777)))
+		panicOnError(os.MkdirAll(dir, os.FileMode(OS_ALL_RWX)))
 	}
 }
 
@@ -480,7 +515,7 @@ func Tools() (err error) {
 
 	// golangci-lint don't want to support if it's not a binary release, so
 	// don't go-install.
-	if berr := toolBuild("static", []string{"", "github.com/golangci/golangci-lint/cmd/golangci-lint@v1.53.1"},
+	if berr := toolBuild("static", []string{"", "github.com/golangci/golangci-lint/cmd/golangci-lint@v1.63.4"},
 		[]string{"gocovmerge", "github.com/wadey/gocovmerge@latest"}); berr != nil {
 		return berr
 	}
@@ -488,9 +523,10 @@ func Tools() (err error) {
 	return nil
 }
 
+//nolint:perfsprint
 func lintArgs(args ...string) []string {
-	returnedArgs := []string{"-j", fmt.Sprintf("%v", concurrency), fmt.Sprintf(
-		"--deadline=%s", linterDeadline.String())}
+	returnedArgs := []string{"-j", strconv.Itoa(concurrency), fmt.Sprintf(
+		"--timeout=%s", linterDeadline.String())}
 	returnedArgs = append(returnedArgs, args...)
 	return returnedArgs
 }
@@ -573,6 +609,7 @@ func LintersBisect() error {
 	_ = must(tempConfig.Write(must(yaml.Marshal(golangCi))))
 	defer os.Remove(tempConfig.Name())
 
+	//nolint:perfsprint
 	for _, linter := range linters {
 		extraArgs := lintArgs("run",
 			fmt.Sprintf("--config=%s", tempConfig.Name()),
@@ -632,7 +669,7 @@ func Test() error {
 	mg.Deps(Tools)
 
 	// Ensure coverage directory exists
-	if err := os.MkdirAll(coverageDir, os.FileMode(0777)); err != nil {
+	if err := os.MkdirAll(coverageDir, os.FileMode(OS_ALL_RWX)); err != nil {
 		return err
 	}
 
@@ -649,6 +686,7 @@ func Test() error {
 
 	// Run tests
 	//coverProfiles := []string{}
+	//nolint:perfsprint
 	for _, pkg := range goPkgs {
 		coverProfile := path.Join(coverageDir,
 			fmt.Sprintf("%s%s", strings.ReplaceAll(pkg, "/", "-"), ".out"))
@@ -675,7 +713,7 @@ func Coverage() error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(constCoverFile, []byte(mergedCoverage), os.FileMode(0777))
+	return os.WriteFile(constCoverFile, []byte(mergedCoverage), os.FileMode(OS_ALL_RWX))
 }
 
 // All runs a full suite suitable for CI
@@ -704,7 +742,7 @@ func makeBuilder(cmd string, platform Platform) func() error {
 		cmdSrc := fmt.Sprintf("./%s/%s", must(filepath.Rel(curDir, cmdDir)), cmd)
 
 		Log("Make platform binary directory:", platform.PlatformDir())
-		if err := os.MkdirAll(platform.PlatformDir(), os.FileMode(0777)); err != nil {
+		if err := os.MkdirAll(platform.PlatformDir(), os.FileMode(OS_ALL_RWX)); err != nil {
 			return errors.Wrapf(err, "error making directory: cmd: %s", cmd)
 		}
 
@@ -983,7 +1021,7 @@ func Autogen() error {
 			updatedScript = append(updatedScript, splitHook[tailAt:]...)
 
 			err = os.WriteFile(gitHookPath, []byte(strings.Join(updatedScript, "\n")),
-				os.FileMode(0755))
+				os.FileMode(OS_ALL_RW|OS_USER_X))
 			if err != nil {
 				return err
 			}

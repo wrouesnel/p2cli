@@ -1,6 +1,8 @@
 module github.com/wrouesnel/p2cli
 
-go 1.20
+go 1.22.0
+
+toolchain go1.23.0
 
 require (
 	github.com/pelletier/go-toml v1.9.5
@@ -9,16 +11,16 @@ require (
 )
 
 require (
-	github.com/alecthomas/kong v0.7.0
+	github.com/alecthomas/kong v1.6.1
 	github.com/flosch/pongo2/v6 v6.0.1-0.20230411124213-c84aecb5fa79
 	github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/magefile/mage v1.15.0
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/pkg/errors v0.9.1
-	github.com/rogpeppe/go-internal v1.10.0
-	github.com/samber/lo v1.38.1
-	go.uber.org/zap v1.23.0
+	github.com/rogpeppe/go-internal v1.13.1
+	github.com/samber/lo v1.47.0
+	go.uber.org/zap v1.27.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -31,9 +33,11 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/nwaples/rardecode v1.1.3 // indirect
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
-	github.com/ulikunitz/xz v0.5.11 // indirect
+	github.com/ulikunitz/xz v0.5.12 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
-	go.uber.org/atomic v1.7.0 // indirect
-	go.uber.org/multierr v1.6.0 // indirect
-	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 // indirect
+	go.uber.org/atomic v1.11.0 // indirect
+	go.uber.org/multierr v1.11.0 // indirect
+	golang.org/x/exp v0.0.0-20250106191152-7588d65b2ba8 // indirect
+	golang.org/x/mod v0.22.0 // indirect
+	golang.org/x/text v0.21.0 // indirect
 )

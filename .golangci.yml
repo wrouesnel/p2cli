@@ -3,7 +3,7 @@ run:
     - mage
 
 output:
-  format: junit-xml:.junit/linters.xml,colored-line-number
+  formats: junit-xml:.junit/linters.xml,colored-line-number
 
 linters:
   enable-all: true
@@ -33,17 +33,8 @@ linters:
 #    - unused
     - godox # noisy and counterproductive
     # Deprecated
-    - nosnakecase # deprecated
-    - ifshort # deprecated
-    - deadcode    # Considered abandoned by golangci-lint as of 1.53.x
-    - varcheck    # Considered abandoned by golangci-lint as of 1.53.x
-    - structcheck   # Considered abandoned by golangci-lint as of 1.53.x
-    - golint
     - ireturn
-    - interfacer
-    - exhaustivestruct
-    - maligned
-    - scopelint
+    - exportloopref   # deprecated (since v1.60.2). Replaced by copyloopvar.
 issues:
   exclude-rules:
     - path: _test\.go
@@ -157,3 +148,7 @@ linters-settings:
       - 'math.*'
       - 'http.StatusText'
       - "strconv.Parse.*"
+
+  perfsprint:
+    # String concatenation frequently makes code harder to read.
+    strconcat: false
