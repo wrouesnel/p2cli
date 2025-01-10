@@ -50,7 +50,7 @@ jobs:
       - name: Release Build
         run: go run mage.go release ${{ matrix.osarch }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: release
           path: release/*
