@@ -1,6 +1,6 @@
 module github.com/wrouesnel/p2cli
 
-go 1.24.0
+go 1.25.4
 
 require (
 	github.com/pelletier/go-toml v1.9.5
