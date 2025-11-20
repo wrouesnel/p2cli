@@ -108,7 +108,23 @@ func normalizePath(name string) string {
 
 // binRootName is set to the name of the directory by default.
 var binRootName = func() string {
-	return must(find.Repo()).Path
+	repo, err := find.Repo()
+	if err != nil {
+		// Couldn't find a repo. Look for mage.go instead which should be at
+		// the root of the source tree.
+		currentDir := must(filepath.Abs(must(os.Getwd())))
+		for {
+			if _, err := os.Stat(filepath.Join(currentDir, "mage.go")); os.IsNotExist(err) {
+				currentDir = filepath.Dir(currentDir)
+			} else {
+				return currentDir
+			}
+			if strings.HasSuffix(currentDir, strconv.QuoteRune(os.PathSeparator)) {
+				panic("Could not locate repo root nor mage.go")
+			}
+		}
+	}
+	return repo.Path
 }()
 
 // dockerImageName is set to the name of the directory by default.
@@ -198,7 +214,9 @@ var productName = func() string {
 // Source files.
 var goSrc []string
 var goDirs []string
-var goPkgs []string
+
+// Due to go:generate and asset embedding interaction, this is now an on demand function
+var goPkgs func() []string
 var goCmds []string
 
 // Function to calculate the version symbol
@@ -416,7 +434,7 @@ func init() {
 			}
 		}
 		return results
-	}()
+	}
 	goCmds = func() []string {
 		results := []string{}
 
@@ -667,6 +685,7 @@ func listCoverageFiles() ([]string, error) {
 // Test run test suite.
 func Test() error {
 	mg.Deps(Tools)
+	mg.Deps(GoGenerate)
 
 	// Ensure coverage directory exists
 	if err := os.MkdirAll(coverageDir, os.FileMode(OS_ALL_RWX)); err != nil {
@@ -687,7 +706,7 @@ func Test() error {
 	// Run tests
 	//coverProfiles := []string{}
 	//nolint:perfsprint
-	for _, pkg := range goPkgs {
+	for _, pkg := range goPkgs() {
 		coverProfile := path.Join(coverageDir,
 			fmt.Sprintf("%s%s", strings.ReplaceAll(pkg, "/", "-"), ".out"))
 		testErr := sh.Run("go", "test", "-v", "-covermode", "count", fmt.Sprintf("-coverprofile=%s", coverProfile),
@@ -735,6 +754,11 @@ func GithubReleaseMatrix() error {
 	jsonData := must(json.Marshal(output))
 	fmt.Printf("::set-output name=release-matrix::%s\n", string(jsonData))
 	return nil
+}
+
+// GoGenerate runs go generate.
+func GoGenerate() error {
+	return sh.Run("go", "generate", "./...")
 }
 
 func makeBuilder(cmd string, platform Platform) func() error {
@@ -809,6 +833,8 @@ func Binary() error {
 //
 //nolint:gocritic
 func doReleaseBin(OSArch string) func() error {
+	mg.Deps(GoGenerate)
+
 	platform, ok := platformsLookup[OSArch]
 	if !ok {
 		return func() error { return errors.Wrapf(errPlatformNotSupported, "ReleaseBin: %s", OSArch) }
@@ -933,8 +959,10 @@ func Clean() error {
 //
 //nolint:unparam
 func Debug() error {
+	mg.Deps(GoGenerate)
+
 	fmt.Println("Source Files:", goSrc)
-	fmt.Println("Packages:", goPkgs)
+	fmt.Println("Packages:", goPkgs())
 	fmt.Println("Directories:", goDirs)
 	fmt.Println("Command Paths:", goCmds)
 	fmt.Println("Output Dirs:", outputDirs)
