@@ -185,6 +185,7 @@ var platforms []Platform = []Platform{
 	{"linux", "arm", ""},
 	{"linux", "arm64", ""},
 	{"linux", "amd64", ""},
+	{"linux", "riscv64", ""},
 	{"linux", "386", ""},
 	{"darwin", "amd64", ""},
 	{"darwin", "arm64", ""},
